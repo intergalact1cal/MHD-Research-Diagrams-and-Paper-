@@ -1,0 +1,32 @@
+# Figures
+
+## `fig_setup_typeiv` — computational set-up and type IV shock structure
+
+Two-panel figure: (a) full domain with boundary conditions, (b) close-up of the
+Edney type IV interaction (the dashed box in (a)). Regenerate with
+
+    pip install matplotlib numpy scipy
+    python3 figures/fig_setup_typeiv.py
+
+Outputs: `fig_setup_typeiv.pdf` (vector, fonts embedded), `.svg`, `.png` (600 dpi).
+
+What is drawn to scale (mm, origin at the cylinder centre):
+- Cylinder R = 38 mm; inlet arc 150 mm; outlets at φ = ±65°; no-slip wall
+  |φ| ≤ 45°, slip wall 45° < |φ| ≤ 65°; inlet split at φ = −12.25°.
+- Shock positions: the no-field shock trace from `fig_mhd_structure.pdf`
+  (`data/bow_shock_no_field.csv`). Away from the trace the bow shock is a
+  Billig-type hyperbola fitted to it (max error < 0.1 mm) with its asymptote set
+  to the local Mach angle.
+- Incident shock: a straight line from the inlet split at β = 18.1°. It meets the
+  bow shock at the simulated upper triple point (φ ≈ −6°).
+  Lower triple point: φ ≈ −19°.
+- Post-shock arrows: deflection θ = 12.49°, from the oblique-shock relations
+  (γ = 1.4), which give M₂ = 5.252 for M∞ = 8.03, β = 18.1°.
+
+Schematic only (not from data): the shear layers, the jet arrow and the jet bow
+shock, which sits about 6 mm off the wall at φ ≈ −19.5°.
+
+## `typeiv_topology` — shock-system topology (Mermaid)
+
+`typeiv_topology.mmd` is the source, validated and rendered with the Mermaid Chart
+connector. `.svg` / `.png` are the rendered outputs.
