@@ -30,7 +30,7 @@ HERE = Path(__file__).resolve().parent
 GAMMA = 1.4
 M_INF = 8.03
 BETA = np.radians(18.1)       # imposed oblique-shock angle
-R = 38.0                      # cylinder radius
+R = 38.1                      # cylinder radius
 R_OUT = 150.0                 # inlet-arc radius
 PHI_OUT = np.radians(65.0)    # outlet half-angle (from stagnation line)
 PHI_NOSLIP = np.radians(45.0) # no-slip / slip wall junction
@@ -289,7 +289,7 @@ label(ax, "bow shock", (-96, 100), upper_bow(70.0), ha="left")
 
 # dimensions
 dim_arrow(ax, (0, 0), pol(R, np.radians(-150)))
-ax.text(40, -27, r"$R$ = 38 mm", ha="left", va="center", fontsize=7.5)
+ax.text(40, -27, r"$R$ = 38.1 mm", ha="left", va="center", fontsize=7.5)
 pd = np.radians(-37)
 q1 = pol(R_OUT, pd)
 dim_arrow(ax, (0, 0), q1)
