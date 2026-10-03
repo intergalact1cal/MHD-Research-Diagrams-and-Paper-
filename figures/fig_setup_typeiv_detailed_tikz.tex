@@ -1,5 +1,5 @@
 % ==========================================================================
-%  Computational set-up and Edney type IV shock structure
+%  Computational set-up and Edney type IV shock structure (detailed)
 %  (a) computational domain and boundary conditions,
 %  (b) close-up of the Edney type IV interaction (dashed box in (a)).
 %
@@ -17,6 +17,8 @@
 %        M_jet = 2.41, jet width 4.5 mm  (oblique-shock relations, gamma = 1.4).
 %        R = 38.1 mm, inlet radius 150 mm, outlets at phi = +/-65 deg,
 %        no-slip wall |phi| <= 45 deg, slip wall beyond, inlet split phi = -12.25 deg.
+%  Jet shock cells and expansion fans are schematic (drawn steeper than
+%  the jet Mach angle for legibility).
 % ==========================================================================
 \documentclass[border=1.5pt]{standalone}
 % ---- fonts: Helvetica text; sans-serif math (newtxsf) when available
@@ -293,6 +295,13 @@
     \draw[shockB] (-90,-13.33) -- (-72.03,-7.46);
   \end{scope}
 
+  % shock cells inside the jet: compressions (solid), reflected expansion fans (dashed)
+  \draw[cellshock] (-50.94,-17.8) -- (-46.41,-14.34);
+  \draw[cellshock] (-42.72,-19.82) -- (-38.6,-15.94);
+  \draw[fan] (-46.41,-14.34) -- (-42.72,-19.82);
+  \draw[fan] (-46.41,-14.34) -- (-44.04,-19.54);
+  \draw[fan] (-46.41,-14.34) -- (-45.25,-19.25);
+
   % transmitted shock
   \draw[shockB]
     (-72.03,-7.46) -- (-71.49,-7.88) -- (-70.95,-8.29) -- (-70.41,-8.69) --
@@ -385,8 +394,21 @@
   \draw[leader] (lsl.south) -- (-46.34,-18.99);
   \node[lbl, anchor=north] (n84155386) at (-35.5,-29.5) {jet bow\\[-0.4ex]shock};
   \draw[leader] (n84155386.north) -- (-36.32,-20.49);
-  \node[lbl, anchor=south] (n23837887) at (-44.5,2.5) {supersonic\\[-0.4ex]jet};
-  \draw[leader] (n23837887.south) -- (-41.2,-17.83);
+
+  % Mach-number regions
+  \node[region] at (-80.5,2.8) {$M > 1$};
+  \node[region] at (-81,-25) {$M > 1$};
+  \node[region] at (-62,8.8) {$M < 1$};
+  \node[region] at (-36.5,-38.5) {$M < 1$};
+
+  % key for the wave pattern inside the jet
+  \draw[cellshock, line width=0.6pt] (-74,-36) -- ++(5,0);
+  \node[lbl, small, anchor=west] at (-68.6,-36) {compression};
+  \draw[fan, line width=0.5pt] (-74,-39.8) -- ++(5,0);
+  \node[lbl, small, anchor=west] at (-68.6,-39.8) {expansion fan};
+  \node[dot] at (-42.74,-17.52) {};
+  \node[lbl, anchor=south] (n87902751) at (-43.5,3.5) {jet, $M > 1$};
+  \draw[leader] (n87902751.south) -- (-42.74,-17.52);
 \end{scope}
 
 % panel letters

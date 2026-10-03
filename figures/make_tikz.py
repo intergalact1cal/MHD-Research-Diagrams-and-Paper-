@@ -1,266 +1,238 @@
-"""Write fig_setup_typeiv_tikz.tex: a self-contained TikZ figure (compiles on Overleaf).
+"""Write the two TikZ versions of the set-up / type IV figure.
 
-All geometry comes from fig_setup_typeiv.py (the same shock fits and case
-parameters); this script only converts it to TikZ coordinates, so the
-.tex needs no data files.  Data units are millimetres, origin at the
-cylinder centre, x downstream, y up.
+    fig_setup_typeiv_tikz.tex           (a) domain + (b) type IV close-up
+    fig_setup_typeiv_detailed_tikz.tex  same, with the full jet structure
+                                        (shock cells, expansion fans, Mach regions)
 
-    python3 make_tikz.py && pdflatex fig_setup_typeiv_tikz.tex
+Both are self-contained standalone LaTeX files (pdfLaTeX, e.g. Overleaf); this
+script only converts the geometry in fig_setup_typeiv.py / jet_geometry.py into
+literal TikZ coordinates, so the .tex files need no data.  Units: mm, origin
+at the cylinder centre, x downstream, y up.
+
+    python3 make_tikz.py
+    pdflatex fig_setup_typeiv_tikz.tex
+    pdflatex fig_setup_typeiv_detailed_tikz.tex
 """
 from pathlib import Path
 
 import numpy as np
 
 import fig_setup_typeiv as g
+import jet_geometry as jg
 
 HERE = Path(__file__).resolve().parent
 
-# panel scales (paper mm per data mm) and origins on the page (paper mm)
-SA = 0.30
-SB = 1.03
-A_ORIGIN = (218 * SA, 152 * SA)            # panel (a) data x in [-218, 52]
-ZX0, ZX1, ZY0, ZY1 = g.ZOOM                # panel (b) window
-B_ORIGIN = (94 - ZX0 * SB, -ZY0 * SB + (304 * SA - (ZY1 - ZY0) * SB) / 2)
-
-R = g.R
-RO = g.R_OUT
+R, RO = g.R, g.R_OUT
 D = np.degrees
-PHI_OUT = D(g.PHI_OUT)
-PHI_NS = D(g.PHI_NOSLIP)
-PHI_SPLIT = D(g.PHI_SPLIT)
-BETA = D(g.BETA)
-THETA = D(g.THETA)
+PHI_OUT, PHI_NS = D(g.PHI_OUT), D(g.PHI_NOSLIP)
+PHI_SPLIT, BETA, THETA = D(g.PHI_SPLIT), D(g.BETA), D(g.THETA)
+T1, T2, SPLIT = g.T1, g.T2, g.SPLIT
+
+# panel (a) layout: data x in [-218, 52], y in [-152, 152]
+SA = 0.30
+A_ORIGIN = (218 * SA, 152 * SA)
+A_HEIGHT = 304 * SA
+B_LEFT, B_WIDTH = 94.0, 77.0          # panel (b) frame on the page (mm)
 
 
+# ----------------------------------------------------------------- helpers
 def tk(phi):
     """Polar angle from the stagnation point -> TikZ angle from +x."""
     return 180.0 - phi
 
 
 def f(v):
-    return f"{v:.2f}".rstrip("0").rstrip(".") if abs(v) > 1e-9 else "0"
+    s = f"{v:.2f}".rstrip("0").rstrip(".")
+    return "0" if s in ("-0", "") else s
 
 
 def pt(p):
     return f"({f(p[0])},{f(p[1])})"
 
 
-def poly(xy, step=1):
-    xy = np.asarray(xy)
-    if xy.shape[0] == 2 and xy.shape[1] != 2:
+def poly(xy, step=1, indent="      "):
+    xy = np.asarray(xy, dtype=float)
+    if xy.ndim == 2 and xy.shape[0] == 2 and xy.shape[1] != 2:
         xy = xy.T
-    pts = [pt(p) for p in xy[::step]]
-    if (len(xy) - 1) % step:
-        pts.append(pt(xy[-1]))
+    idx = list(range(0, len(xy), step))
+    if idx[-1] != len(xy) - 1:
+        idx.append(len(xy) - 1)
+    pts = [pt(xy[i]) for i in idx]
     lines, cur = [], ""
     for p in pts:
-        if len(cur) + len(p) > 88:
-            lines.append(cur)
+        if cur and len(cur) + len(p) > 84:
+            lines.append(cur.rstrip())
             cur = ""
         cur += p + " -- "
     lines.append(cur[:-4])
-    return "\n      ".join(lines)
+    return ("\n" + indent).join(lines)
 
 
-def quad_to_cubic(p0, p1, p2):
-    c1 = p0 + 2 / 3 * (p1 - p0)
-    c2 = p2 + 2 / 3 * (p1 - p2)
-    return c1, c2
+def wall(phi_deg, r=R):
+    p = np.radians(phi_deg)
+    return np.array([-r * np.cos(p), r * np.sin(p)])
 
 
-def bezier_cmd(p0, ctrl, p2):
-    c1, c2 = quad_to_cubic(p0, ctrl, p2)
-    return f"{pt(p0)} .. controls {pt(c1)} and {pt(c2)} .. {pt(p2)}"
-
-
-# ------------------------------------------------------------------ geometry
-T1, T2 = g.T1, g.T2
-split = g.SPLIT
-
-up_a = g.upper_bow(np.linspace(g.y_t1, 160, 140))
-lo_a = np.array([g.lower_bow(v) for v in np.linspace(g.v_t2, -170, 140)]).T
-up_b = g.upper_bow(np.linspace(g.y_t1, ZY1 + 6, 90))
-lo_b = np.array([g.lower_bow(v) for v in np.linspace(g.v_t2, -75, 120)]).T
-lo_b = lo_b[:, lo_b[1] > ZY0 - 6]
+# ----------------------------------------------------------------- geometry
+up_a = g.upper_bow(np.linspace(g.y_t1, 160, 140)).T
+lo_a = np.array([g.lower_bow(v) for v in np.linspace(g.v_t2, -170, 140)])
 xt, yt = g.transmitted(40)
-trans = np.c_[xt, yt]
+TRANS = np.c_[xt, yt]
+INC_UP = np.array([-214.0, g.incident(-214.0)])
 
-sl1_ctrl = 0.5 * (T1 + g.J1) + np.array([0.0, 0.9])
-sl2_ctrl = 0.5 * (T2 + g.J2) + np.array([0.0, 0.4])
+# 150 mm dimension
+PD = -37.0
+Q1 = wall(PD, RO)
+_d = Q1 / np.linalg.norm(Q1)
+_n = np.array([-_d[1], _d[0]])
+_n = _n if _n[1] > 0 else -_n
+LBL150 = 0.70 * Q1 + 5.5 * _n
+ROT150 = np.degrees(np.arctan2(_d[1], _d[0]))
+ROT150 = ROT150 - 180 if ROT150 > 90 else ROT150 + 180 if ROT150 < -90 else ROT150
 
-phi_js = np.linspace(g.PHI_JET - g.JS_SPAN, g.PHI_JET + g.JS_SPAN, 41)
-r_js = g.r_jet_shock(phi_js)
-js = np.c_[-r_js * np.cos(phi_js), r_js * np.sin(phi_js)]
-phi_in = np.linspace(g.PHI_JET + g.HALF_JET, g.PHI_JET - g.HALF_JET, 30)
-r_in = g.r_jet_shock(phi_in)
-js_inner = np.c_[-r_in * np.cos(phi_in), r_in * np.sin(phi_in)]   # J1 -> J2
-
-
-def on_sl(p0, ctrl, p2, t):
-    return (1 - t) ** 2 * p0 + 2 * (1 - t) * t * ctrl + t ** 2 * p2
-
-
-SL1 = lambda t: on_sl(T1, sl1_ctrl, g.J1, t)
-SL2 = lambda t: on_sl(T2, sl2_ctrl, g.J2, t)
-
-jet_tail = 0.5 * (SL1(0.68) + SL2(0.03)) + np.array([-0.4, 0.0])
-jet_head = jet_tail + 4.4 * np.array([np.cos(-0.07), np.sin(-0.07)])
-
-inc_b0 = np.array([ZX0 - 4, g.incident(ZX0 - 4)])
-x_up = -214.0
-inc_up = np.array([x_up, g.incident(x_up)])
-
-# dimension line for the 150 mm radius
-pd = -37.0
-q1 = np.array([-RO * np.cos(np.radians(pd)), RO * np.sin(np.radians(pd))])
-dvec = q1 / np.linalg.norm(q1)
-nrm = np.array([-dvec[1], dvec[0]])
-if nrm[1] < 0:
-    nrm = -nrm
-lbl150 = 0.70 * q1 + 5.5 * nrm
-rot150 = np.degrees(np.arctan2(dvec[1], dvec[0]))
-rot150 = rot150 - 180 if rot150 > 90 else rot150 + 180 if rot150 < -90 else rot150
+JET_FILL = np.r_[jg.UPPER_FULL, jg.jet_shock_between()[1:-1], jg.LOWER[::-1], TRANS[::-1][1:]]
+JSHOCK = jg.jet_shock(30)
+AFTER_U, AFTER_L = jg.after_shock(+1, 30), jg.after_shock(-1, 30)
+SHOCKS, FANS = jg.wave_pattern()
 
 
-def wall(phi):
-    return np.array([-R * np.cos(np.radians(phi)), R * np.sin(np.radians(phi))])
+def jet_mid(frac):
+    return 0.5 * (jg.at(frac, +1) + jg.at(frac, -1))
 
 
-def bow_at(y):
-    return g.upper_bow(y)
+# ----------------------------------------------------------------- preamble
+PREAMBLE = r"""\documentclass[border=1.5pt]{standalone}
+% ---- fonts: Helvetica text; sans-serif math (newtxsf) when available
+\usepackage[T1]{fontenc}
+\usepackage[scaled=0.92]{helvet}
+\renewcommand{\familydefault}{\sfdefault}
+\IfFileExists{newtxsf.sty}{\usepackage{newtxsf}}{}
+\usepackage{tikz}
+\usetikzlibrary{arrows.meta}
+
+% ---- colours
+\definecolor{ink}{HTML}{111111}
+\definecolor{shockgrey}{HTML}{4A4A4A}
+\definecolor{dimgrey}{HTML}{8A8A8A}
+\definecolor{leadergrey}{HTML}{A0A0A0}
+\definecolor{bodygrey}{HTML}{E4E4E4}
+\definecolor{freeblue}{HTML}{1A5FA8}
+\definecolor{postgreen}{HTML}{0E8A62}
+\definecolor{slipochre}{HTML}{B06A10}
+\definecolor{jetfill}{HTML}{FBEBD3}
+\definecolor{jetedge}{HTML}{8C5A14}
+
+% ---- styles
+\tikzset{
+  lbl/.style={font=\sffamily\footnotesize, text=ink, inner sep=1.2pt, align=center},
+  small/.style={font=\sffamily\scriptsize},
+  region/.style={font=\sffamily\footnotesize, text=dimgrey, inner sep=1pt},
+  leader/.style={draw=leadergrey, line width=0.35pt},
+  freeinlet/.style={draw=freeblue, line width=1.5pt},
+  postinlet/.style={draw=postgreen, line width=1.5pt},
+  outlet/.style={draw=dimgrey, line width=1.1pt, dash pattern=on 3.2pt off 2pt, line cap=butt},
+  noslip/.style={draw=ink, line width=1.7pt},
+  slip/.style={draw=slipochre, line width=1.7pt, dash pattern=on 2pt off 1.1pt, line cap=butt},
+  shockA/.style={draw=shockgrey, line width=0.7pt},
+  shockB/.style={draw=ink, line width=1.15pt},
+  jetshock/.style={draw=ink, line width=1.0pt},
+  shear/.style={draw=ink, line width=0.7pt, dash pattern=on 2.4pt off 1.4pt, line cap=butt},
+  cellshock/.style={draw=jetedge, line width=0.45pt},
+  fan/.style={draw=jetedge, line width=0.35pt, dash pattern=on 1.1pt off 0.9pt, line cap=butt},
+  flow/.style={line width=0.9pt, -{Stealth[length=2.6mm, width=1.9mm]}},
+  jetflow/.style={draw=ink, line width=0.7pt, -{Stealth[length=1.9mm, width=1.4mm]}},
+  dim/.style={draw=dimgrey, line width=0.45pt,
+              {Stealth[length=1.6mm, width=1.1mm]}-{Stealth[length=1.6mm, width=1.1mm]}},
+  triple/.style={circle, fill=ink, inner sep=0pt, minimum size=1.5mm},
+  dot/.style={circle, fill=leadergrey, inner sep=0pt, minimum size=0.9mm},
+}
+"""
 
 
-# ------------------------------------------------------------------ TeX
-tex = rf"""% ==========================================================================
-%  Computational set-up and Edney type IV shock structure
-%  (a) full domain and boundary conditions, (b) close-up of the interaction.
+def header(title, extra):
+    return rf"""% ==========================================================================
+%  {title}
+%  (a) computational domain and boundary conditions,
+%  (b) close-up of the Edney type IV interaction (dashed box in (a)).
 %
-%  Self-contained TikZ figure: compiles with pdfLaTeX (e.g. on Overleaf).
-%  Generated by make_tikz.py from fig_setup_typeiv.py; the shock coordinates
-%  are the no-field shock trace (data/bow_shock_no_field.csv) and its
-%  Billig-type far-field fit.  All coordinates are in millimetres with the
-%  origin at the cylinder centre, x downstream, y up; phi is measured from
-%  the stagnation point, positive upward.
+%  Standalone LaTeX file.  On Overleaf: New Project > Blank Project, replace
+%  the whole of main.tex with this file (or upload it and set it as the main
+%  document), compiler pdfLaTeX.  To use the figure in a paper, compile this
+%  file and include the PDF with \includegraphics.
 %
-%  Case: M_inf = 8.03, beta = 18.1 deg  ->  theta = {THETA:.2f} deg, M_2 = {g.M_2:.3f}
-%        (oblique-shock relations, gamma = 1.4)
+%  Generated by make_tikz.py.  Coordinates in mm, origin at the cylinder
+%  centre, x downstream, y up; phi measured from the stagnation point.
+%  Shock positions: no-field shock trace (data/bow_shock_no_field.csv) and its
+%  Billig-type far-field fit.
+%  Case: M_inf = 8.03, beta = 18.1 deg -> theta = {THETA:.2f} deg, M_2 = {g.M_2:.3f};
+%        transmitted shock {D(jg.SIGMA):.1f} deg -> jet direction {D(jg.DELTA0):.1f} deg,
+%        M_jet = {jg.M_JET:.2f}, jet width {jg.WIDTH:.1f} mm  (oblique-shock relations, gamma = 1.4).
 %        R = {R} mm, inlet radius {RO:.0f} mm, outlets at phi = +/-{PHI_OUT:.0f} deg,
-%        no-slip wall |phi| <= {PHI_NS:.0f} deg, slip wall beyond,
-%        inlet split at phi = {PHI_SPLIT} deg.
-%        Upper triple point ({T1[0]:.1f}, {T1[1]:.1f}) mm, lower ({T2[0]:.1f}, {T2[1]:.1f}) mm.
-%
-%  To use inside a paper instead of standalone, copy the tikzpicture together
-%  with the colour/style definitions and load tikz, helvet, newtxsf and mathastext.
+%        no-slip wall |phi| <= {PHI_NS:.0f} deg, slip wall beyond, inlet split phi = {PHI_SPLIT} deg.
+{extra}% ==========================================================================
+"""
+
+
+# ----------------------------------------------------------------- panel (a)
+def panel_a(zoom):
+    zx0, zx1, zy0, zy1 = zoom
+    return rf"""
 % ==========================================================================
-\documentclass[border=1.5pt]{{standalone}}
-\usepackage[T1]{{fontenc}}
-\usepackage{{textcomp}}
-\usepackage[scaled=0.92]{{helvet}}
-\renewcommand{{\familydefault}}{{\sfdefault}}
-\usepackage{{newtxsf}}               % sans-serif Greek
-\usepackage[italic,defaultmathsizes]{{mathastext}}  % Latin letters and digits in math from Helvetica
-\usepackage{{tikz}}
-\usetikzlibrary{{arrows.meta,calc}}
-
-% ---------------------------------------------------------------- colours
-\definecolor{{ink}}{{HTML}}{{111111}}
-\definecolor{{shockgrey}}{{HTML}}{{4A4A4A}}
-\definecolor{{dimgrey}}{{HTML}}{{8A8A8A}}
-\definecolor{{leadergrey}}{{HTML}}{{A0A0A0}}
-\definecolor{{bodygrey}}{{HTML}}{{E4E4E4}}
-\definecolor{{freeblue}}{{HTML}}{{1A5FA8}}
-\definecolor{{postgreen}}{{HTML}}{{0E8A62}}
-\definecolor{{slipochre}}{{HTML}}{{B06A10}}
-\definecolor{{jetfill}}{{HTML}}{{FBF1E3}}
-
-\begin{{document}}
-\sffamily\footnotesize
-\begin{{tikzpicture}}[
-    x=1mm, y=1mm,
-    line cap=round, line join=round,
-    % --- labels and leaders
-    lbl/.style={{font=\sffamily\footnotesize, text=ink, inner sep=1.2pt, align=center}},
-    small/.style={{font=\sffamily\scriptsize}},
-    leader/.style={{draw=leadergrey, line width=0.35pt, shorten >=0.3pt}},
-    % --- domain boundaries
-    freeinlet/.style={{draw=freeblue, line width=1.5pt}},
-    postinlet/.style={{draw=postgreen, line width=1.5pt}},
-    outlet/.style={{draw=dimgrey, line width=1.1pt, dash pattern=on 3.2pt off 2pt, line cap=butt}},
-    noslip/.style={{draw=ink, line width=1.7pt}},
-    slip/.style={{draw=slipochre, line width=1.7pt, dash pattern=on 2pt off 1.1pt, line cap=butt}},
-    % --- flow features
-    shockA/.style={{draw=shockgrey, line width=0.7pt}},
-    shockB/.style={{draw=ink, line width=1.15pt}},
-    shear/.style={{draw=ink, line width=0.75pt, dash pattern=on 2.6pt off 1.5pt, line cap=butt}},
-    flow/.style={{line width=0.9pt, -{{Stealth[length=2.6mm, width=1.9mm]}}}},
-    dim/.style={{draw=dimgrey, line width=0.45pt, {{Stealth[length=1.6mm, width=1.1mm]}}-{{Stealth[length=1.6mm, width=1.1mm]}}}},
-    triple/.style={{circle, fill=ink, inner sep=0pt, minimum size=1.55mm}},
-]
-
-% ==========================================================================
-%  (a)  computational domain        scale 1 : {1/SA:.3f}
+%  (a)  computational domain              scale 1 : {1 / SA:.2f}
 % ==========================================================================
 \begin{{scope}}[shift={{({f(A_ORIGIN[0])},{f(A_ORIGIN[1])})}}, x={SA}mm, y={SA}mm]
 
-  % cylinder (grey disk; dotted outline where it lies outside the domain)
+  % cylinder (dotted outline where it lies outside the domain)
   \fill[bodygrey] (0,0) circle[radius={R}];
   \draw[dimgrey, line width=0.45pt, dash pattern=on 0.4pt off 1.3pt]
-    ({tk(PHI_OUT)}:{R}) arc[start angle={tk(PHI_OUT)}, end angle={tk(-PHI_OUT)-360}, radius={R}];
+    ({tk(PHI_OUT)}:{R}) arc[start angle={tk(PHI_OUT)}, end angle={tk(-PHI_OUT) - 360}, radius={R}];
 
-  % shock system (no-field solution), clipped to the domain
+  % shock system, clipped to the domain
   \begin{{scope}}
     \clip ({tk(PHI_OUT)}:{RO}) arc[start angle={tk(PHI_OUT)}, end angle={tk(-PHI_OUT)}, radius={RO}]
-          -- ({tk(-PHI_OUT)}:{R}) arc[start angle={tk(-PHI_OUT)}, end angle={tk(PHI_OUT)}, radius={R}] -- cycle;
-    % upper bow shock
+      -- ({tk(-PHI_OUT)}:{R}) arc[start angle={tk(-PHI_OUT)}, end angle={tk(PHI_OUT)}, radius={R}] -- cycle;
     \draw[shockA]
-      {poly(up_a.T, 2)};
-    % lower bow shock
+      {poly(up_a, 2)};
     \draw[shockA]
-      {poly(lo_a.T, 2)};
-    % transmitted shock
+      {poly(lo_a, 2)};
     \draw[shockA]
-      {poly(trans, 2)};
-    % incident (imposed oblique) shock inside the domain
-    \draw[shockA] {pt(split)} -- {pt(T1)};
+      {poly(TRANS, 2)};
+    \draw[shockA] {pt(SPLIT)} -- {pt(T1)};
   \end{{scope}}
 
   % imposed oblique shock upstream of the inlet
-  \draw[shockA, dash pattern=on 2.4pt off 1.6pt, line cap=butt] {pt(inc_up)} -- {pt(split)};
+  \draw[shockA, dash pattern=on 2.4pt off 1.6pt, line cap=butt] {pt(INC_UP)} -- {pt(SPLIT)};
 
-  % inlets
+  % inlets and outlets
   \draw[freeinlet] ({tk(PHI_SPLIT)}:{RO}) arc[start angle={tk(PHI_SPLIT)}, end angle={tk(PHI_OUT)}, radius={RO}];
   \draw[postinlet] ({tk(-PHI_OUT)}:{RO}) arc[start angle={tk(-PHI_OUT)}, end angle={tk(PHI_SPLIT)}, radius={RO}];
-
-  % outlets
   \draw[outlet] ({tk(PHI_OUT)}:{R}) -- ({tk(PHI_OUT)}:{RO});
   \draw[outlet] ({tk(-PHI_OUT)}:{R}) -- ({tk(-PHI_OUT)}:{RO});
 
-  % walls: no-slip |phi| <= {PHI_NS:.0f} deg, slip {PHI_NS:.0f} < |phi| <= {PHI_OUT:.0f} deg
+  % walls: no-slip for |phi| <= {PHI_NS:.0f} deg, slip for {PHI_NS:.0f} < |phi| <= {PHI_OUT:.0f} deg
   \draw[slip]   ({tk(PHI_OUT)}:{R}) arc[start angle={tk(PHI_OUT)}, end angle={tk(PHI_NS)}, radius={R}];
   \draw[slip]   ({tk(-PHI_NS)}:{R}) arc[start angle={tk(-PHI_NS)}, end angle={tk(-PHI_OUT)}, radius={R}];
   \draw[noslip] ({tk(PHI_NS)}:{R}) arc[start angle={tk(PHI_NS)}, end angle={tk(-PHI_NS)}, radius={R}];
-
-  % cylinder centre
   \draw[ink, line width=0.5pt] (-3.5,0) -- (3.5,0) (0,-3.5) -- (0,3.5);
 
-  % inlet split and shock angle beta
-  \draw[dimgrey, line width=0.4pt, dash pattern=on 0.8pt off 1pt] {pt(split)} -- ++(48,0);
-  \draw[ink, line width=0.45pt] {pt(split)} ++(36,0) arc[start angle=0, end angle={BETA}, radius=36];
-  \node[lbl, anchor=north west] at {pt(split + [6, -2.5])} {{$\beta = 18.1^\circ$}};
-  \filldraw[fill=white, draw=ink, line width=0.75pt] {pt(split)} circle[radius=4.2];
-  \node[lbl, small, text=dimgrey, anchor=south east, align=right] at {pt(split + [-6, 7])}
-    {{inlet split\\[-0.3ex]$\phi = {PHI_SPLIT}^\circ$}};
+  % inlet split and shock angle
+  \draw[dimgrey, line width=0.4pt, dash pattern=on 0.8pt off 1pt] {pt(SPLIT)} -- ++(48,0);
+  \draw[ink, line width=0.45pt] {pt(SPLIT + [36, 0])} arc[start angle=0, end angle={BETA}, radius=36];
+  \node[lbl, anchor=north west] at {pt(SPLIT + [6, -2.5])} {{$\beta$ = 18.1$^\circ$}};
+  \filldraw[fill=white, draw=ink, line width=0.75pt] {pt(SPLIT)} circle[radius=4.2];
+  \node[lbl, small, text=dimgrey, anchor=south east, align=right] at {pt(SPLIT + [-6, 7])}
+    {{inlet split\\[-0.3ex]$\phi$ = $-$12.25$^\circ$}};
 
   % inflow
   \foreach \yy in {{116, 94, 72}} {{\draw[flow, freeblue] (-214,\yy) -- ++(30,0);}}
   \foreach \yy in {{-72, -94, -116}} {{\draw[flow, postgreen] (-214,\yy) -- ++({THETA:.2f}:30.6);}}
   \node[lbl, text=freeblue, anchor=south west, align=left] at (-215,127)
-    {{freestream inlet\\$M_\infty = 8.03$}};
+    {{freestream inlet\\$M_\infty$ = 8.03}};
   \node[lbl, text=postgreen, anchor=north west, align=left] at (-215,-122)
-    {{post-shock inlet\\$M_2 = 5.25$}};
+    {{post-shock inlet\\$M_2$ = 5.25}};
 
   % boundary labels
-  \node[lbl, anchor=center] (ns) at (5,15) {{no-slip wall\\$T_w = 294$\,K}};
+  \node[lbl] (ns) at (5,15) {{no-slip wall\\$T_w$ = 294\,K}};
   \draw[leader] (ns.west) -- {pt(wall(15))};
   \node[lbl, anchor=west] (sw) at (24,64) {{slip wall}};
   \draw[leader] (sw.west) -- {pt(wall(56))};
@@ -269,26 +241,40 @@ tex = rf"""% ===================================================================
   \node[lbl, text=dimgrey, anchor=west] (o2) at (-2,-128) {{outlet}};
   \draw[leader] (o2.west) -- ({tk(-PHI_OUT)}:{0.8 * RO:.0f});
   \node[lbl, anchor=west] (bs) at (-98,100) {{bow shock}};
-  \draw[leader] (bs.south east) ++(-6,0.5) -- {pt(bow_at(72.0))};
+  \draw[leader] ([xshift=-6mm]bs.south east) -- {pt(g.upper_bow(72.0))};
 
   % dimensions
   \draw[dim] (0,0) -- (-45:{R});
-  \node[lbl, anchor=north] at ({R * 0.7071 + 6:.2f},{-R * 0.7071 - 4.5:.2f}) {{$R = {R}$\,mm}};
-  \draw[dim] (0,0) -- ({tk(pd)}:{RO});
-  \node[lbl, small, text=dimgrey, rotate={rot150:.2f}] at {pt(lbl150)} {{{RO:.0f}\,mm}};
+  \node[lbl, anchor=north] at {pt(wall(-135) + [6, -4.5])} {{$R$ = {R}\,mm}};
+  \draw[dim] (0,0) -- ({tk(PD)}:{RO});
+  \node[lbl, small, text=dimgrey, rotate={ROT150:.2f}] at {pt(LBL150)} {{{RO:.0f}\,mm}};
 
-  % zoom window shown in (b)
+  % window shown in (b)
   \draw[ink, line width=0.4pt, dash pattern=on 1.6pt off 1.2pt, line cap=butt]
-    ({ZX0},{ZY0}) rectangle ({ZX1},{ZY1});
-  \node[lbl, small, anchor=north west, inner sep=1.5pt] at ({ZX0},{ZY1}) {{(b)}};
+    ({f(zx0)},{f(zy0)}) rectangle ({f(zx1)},{f(zy1)});
+  \node[lbl, small, anchor=north west, inner sep=1.5pt] at ({f(zx0)},{f(zy1)}) {{(b)}};
 \end{{scope}}
+"""
 
+
+# ----------------------------------------------------------------- panel (b)
+def panel_b(zoom, labels, detailed):
+    zx0, zx1, zy0, zy1 = zoom
+    sb = min(B_WIDTH / (zx1 - zx0), A_HEIGHT / (zy1 - zy0))
+    ox = B_LEFT - zx0 * sb
+    oy = -zy0 * sb + (A_HEIGHT - (zy1 - zy0) * sb) / 2
+    up_b = g.upper_bow(np.linspace(g.y_t1, zy1 + 6, 90)).T
+    lo_b = np.array([g.lower_bow(v) for v in np.linspace(g.v_t2, -80, 160)])
+    lo_b = lo_b[lo_b[:, 1] > zy0 - 6]
+    inc0 = np.array([zx0 - 4, g.incident(zx0 - 4)])
+
+    out = [rf"""
 % ==========================================================================
-%  (b)  type IV interaction          scale {SB} : 1
+%  (b)  type IV interaction               scale {sb:.3f} : 1
 % ==========================================================================
-\begin{{scope}}[shift={{({f(B_ORIGIN[0])},{f(B_ORIGIN[1])})}}, x={SB}mm, y={SB}mm]
+\begin{{scope}}[shift={{({f(ox)},{f(oy)})}}, x={sb:.4f}mm, y={sb:.4f}mm]
   \begin{{scope}}
-    \clip ({ZX0},{ZY0}) rectangle ({ZX1},{ZY1});
+    \clip ({f(zx0)},{f(zy0)}) rectangle ({f(zx1)},{f(zy1)});
 
     % body and wall
     \fill[bodygrey] (0,0) circle[radius={R}];
@@ -296,80 +282,157 @@ tex = rf"""% ===================================================================
     \draw[slip, line width=2pt] ({tk(PHI_OUT)}:{R}) arc[start angle={tk(PHI_OUT)}, end angle={tk(PHI_NS)}, radius={R}];
     \draw[slip, line width=2pt] ({tk(-PHI_NS)}:{R}) arc[start angle={tk(-PHI_NS)}, end angle={tk(-PHI_OUT)}, radius={R}];
 
-    % supersonic jet (light fill between the shear layers)
+    % supersonic jet: transmitted shock, shear layers and jet bow shock
     \fill[jetfill]
-      {bezier_cmd(T1, sl1_ctrl, g.J1)}
-      -- {poly(js_inner, 1)}
-      {bezier_cmd(g.J2, sl2_ctrl, T2)[len(pt(g.J2)) + 1:]}
-      -- {poly(trans[::-1], 2)} -- cycle;
+      {poly(JET_FILL, 2)} -- cycle;
 
-    % upper bow shock
+    % bow shock above and below the interaction, incident shock
     \draw[shockB]
-      {poly(up_b.T, 1)};
-    % lower bow shock
+      {poly(up_b)};
     \draw[shockB]
-      {poly(lo_b.T, 1)};
-    % incident shock
-    \draw[shockB] {pt(inc_b0)} -- {pt(T1)};
+      {poly(lo_b, 2)};
+    \draw[shockB] {pt(inc0)} -- {pt(T1)};
   \end{{scope}}
-
+"""]
+    if detailed:
+        out.append("\n  % shock cells inside the jet: compressions (solid), reflected expansion fans (dashed)\n")
+        for a, b in SHOCKS:
+            out.append(f"  \\draw[cellshock] {pt(a)} -- {pt(b)};\n")
+        for a, b in FANS:
+            out.append(f"  \\draw[fan] {pt(a)} -- {pt(b)};\n")
+    out.append(rf"""
   % transmitted shock
   \draw[shockB]
-    {poly(trans, 1)};
+    {poly(TRANS)};
 
-  % shear layers
-  \draw[shear] {bezier_cmd(T1, sl1_ctrl, g.J1)};
-  \draw[shear] {bezier_cmd(T2, sl2_ctrl, g.J2)};
+  % shear layers bounding the jet, continued past the jet bow shock to the wall
+  \draw[shear]
+    {poly(jg.UPPER_FULL, 4)};
+  \draw[shear]
+    {poly(jg.LOWER, 4)};
+  \draw[shear]
+    {poly(AFTER_U, 3)};
+  \draw[shear]
+    {poly(AFTER_L, 3)};
 
   % jet bow shock
-  \draw[shockB]
-    {poly(js, 1)};
+  \draw[jetshock]
+    {poly(JSHOCK, 2)};
 
   % triple points
   \node[triple] (T1) at {pt(T1)} {{}};
   \node[triple] (T2) at {pt(T2)} {{}};
+""")
+    out.append(labels(sb))
+    out.append("\\end{scope}\n")
+    return "".join(out), sb
 
-  % jet direction
-  \draw[flow, line width=0.8pt, -{{Stealth[length=2.1mm, width=1.6mm]}}] {pt(jet_tail)} -- {pt(jet_head)};
+
+def leader(text, at, target, anchor, frm=None, style="lbl", name=None):
+    frm = frm or {"east": "east", "west": "west", "north": "north", "south": "south",
+                  "north east": "north east", "north west": "north west",
+                  "south east": "south east", "south west": "south west",
+                  "center": "center"}[anchor]
+    nm = name or f"n{abs(hash((text, at[0], at[1]))) % 10**8}"
+    return (f"  \\node[{style}, anchor={anchor}] ({nm}) at {pt(at)} {{{text}}};\n"
+            f"  \\draw[leader] ({nm}.{frm}) -- {pt(target)};\n")
+
+
+# ---- labels (both versions use the same close-up window)
+ZOOM = (-86.0, -30.0, -42.0, 16.0)
+
+
+def wedge_point(x):
+    """Point midway between the upper shear layer and the transmitted shock at x."""
+    yu = np.interp(x, jg.UPPER_FULL[:, 0], jg.UPPER_FULL[:, 1])
+    yt = np.interp(x, TRANS[:, 0], TRANS[:, 1])
+    return np.array([x, 0.5 * (yu + yt)])
+
+
+def common_labels(detailed):
+    a0 = wedge_point(-62.5)
+    s = rf"""
+  % jet direction (upstream of the shock cells)
+  \draw[jetflow] {pt(a0)} -- {pt(a0 + 4.2 * jg.D0)};
 
   % inflow
-  \foreach \yy in {{22, 15}} {{\draw[flow, freeblue] (-98,\yy) -- ++(12,0);}}
-  \node[lbl, text=freeblue, anchor=south west] at (-98.8,26.2) {{$M_\infty = 8.03$}};
-  \foreach \yy in {{-38, -45}} {{\draw[flow, postgreen] (-98,\yy) -- ++({THETA:.2f}:12.3);}}
-  \node[lbl, text=postgreen, anchor=south west] at (-98.8,-33.2) {{$M_2 = 5.25$}};
-
-  % labels
-  \node[lbl, anchor=east] (lbow) at (-81,9) {{bow shock}};
-  \draw[leader] (lbow.east) -- {pt(bow_at(9.0))};
-  \node[lbl, anchor=south] (lt1) at (-89,-3.5) {{upper triple point}};
-  \draw[leader] (lt1.south east) ++(-3,0.4) -- (T1);
-  \node[lbl, anchor=north] (linc) at (-86,-21.5) {{incident shock}};
-  \draw[leader] (linc.north) ++(-2,0) -- {pt([-90, g.incident(-90)])};
-  \node[lbl, anchor=north] (ltr) at (-68,-26.5) {{transmitted shock}};
-  \draw[leader] (ltr.north) -- {pt(trans[15])};
-  \node[lbl, anchor=north] (lt2) at (-56,-40) {{lower triple point}};
-  \draw[leader] (lt2.north) -- (T2);
-  \node[lbl, anchor=south] (lsl) at (-55,4) {{shear layers}};
-  \draw[leader] (lsl.south) ++(-2,0) -- {pt(SL1(0.37))};
-  \draw[leader] (lsl.south) ++(2,0) -- {pt(SL2(0.75))};
-  \node[lbl, anchor=south] (ljs) at (-40.5,13) {{jet bow\\[-0.4ex]shock}};
-  \draw[leader] (ljs.south) -- {pt(js[-6])};
-  \node[lbl, anchor=north] (ljet) at (-33.5,-33) {{supersonic\\[-0.4ex]jet}};
-  \draw[leader] (ljet.north) -- {pt(jet_tail + [4.2, -2.6])};
+  \foreach \yy in {{10.5, 6.5}} {{\draw[flow, freeblue] (-85,\yy) -- ++(7.5,0);}}
+  \node[lbl, text=freeblue, anchor=south west] at (-85.6,12.3) {{$M_\infty$ = 8.03}};
+  \foreach \yy in {{-36.5, -40.5}} {{\draw[flow, postgreen] (-85,\yy) -- ++({THETA:.2f}:7.6);}}
+  \node[lbl, text=postgreen, anchor=south west] at (-85.6,-34.6) {{$M_2$ = 5.25}};
 
   % scale bar
-  \draw[ink, line width=0.8pt, line cap=butt] (-64,34) -- (-54,34);
-  \draw[ink, line width=0.6pt] (-64,33) -- (-64,35) (-54,33) -- (-54,35);
-  \node[lbl, small, anchor=north] at (-59,32.8) {{10\,mm}};
-\end{{scope}}
+  \draw[ink, line width=0.8pt, line cap=butt] (-58,13) -- (-48,13);
+  \draw[ink, line width=0.6pt] (-58,12.4) -- (-58,13.6) (-48,12.4) -- (-48,13.6);
+  \node[lbl, small, anchor=north] at (-53,12.2) {{10\,mm}};
 
-% panel letters
-\node[anchor=north west, inner sep=0pt, font=\sffamily\bfseries\small] at (0,{304 * SA + 5:.1f}) {{(a)}};
-\node[anchor=north west, inner sep=0pt, font=\sffamily\bfseries\small] at (92,{304 * SA + 5:.1f}) {{(b)}};
-
-\end{{tikzpicture}}
-\end{{document}}
+  % labels
 """
+    s += leader("bow shock", (-69.5, 3.5), g.upper_bow(3.5), "west")
+    s += leader(r"upper\\[-0.4ex]triple point", (-79.5, -3), T1, "center", frm="south east")
+    s += leader("incident shock", (-77, -15.5), (-80, g.incident(-80)), "north")
+    s += leader("transmitted shock", (-66, -22.5), TRANS[20], "north")
+    s += leader("lower triple point", (-60, -30.5), T2, "north")
+    s += leader("shear layers", (-57, -2), jg.UPPER_FULL[24], "south", name="lsl")
+    s += f"  \\draw[leader] (lsl.south) -- {pt(jg.at(0.36, -1))};\n"
+    s += leader(r"jet bow\\[-0.4ex]shock", (-35.5, -29.5), JSHOCK[1], "north")
+    if detailed:
+        s += r"""
+  % Mach-number regions
+  \node[region] at (-80.5,2.8) {$M > 1$};
+  \node[region] at (-81,-25) {$M > 1$};
+  \node[region] at (-62,8.8) {$M < 1$};
+  \node[region] at (-36.5,-38.5) {$M < 1$};
 
-(HERE / "fig_setup_typeiv_tikz.tex").write_text(tex)
-print("wrote", HERE / "fig_setup_typeiv_tikz.tex", len(tex.splitlines()), "lines")
+  % key for the wave pattern inside the jet
+  \draw[cellshock, line width=0.6pt] (-74,-36) -- ++(5,0);
+  \node[lbl, small, anchor=west] at (-68.6,-36) {compression};
+  \draw[fan, line width=0.5pt] (-74,-39.8) -- ++(5,0);
+  \node[lbl, small, anchor=west] at (-68.6,-39.8) {expansion fan};
+"""
+        s += f"  \\node[dot] at {pt(jet_mid(0.6))} {{}};\n"
+        s += leader(r"jet, $M > 1$", (-43.5, 3.5), jet_mid(0.6), "south")
+    else:
+        s += leader(r"supersonic\\[-0.4ex]jet", (-44.5, 2.5), jet_mid(0.72), "south")
+    return s
+
+
+def labels_clean(sb):
+    return common_labels(False)
+
+
+def labels_detailed(sb):
+    return common_labels(True)
+
+
+ZOOM_CLEAN = ZOOM_DET = ZOOM
+
+
+# ----------------------------------------------------------------- assemble
+def build(path, title, zoom, labels, detailed, extra=""):
+    pb, sb = panel_b(zoom, labels, detailed)
+    tex = (header(title, extra) + PREAMBLE + "\n\\begin{document}\n\\sffamily\\footnotesize\n"
+           "\\begin{tikzpicture}[x=1mm, y=1mm, line cap=round, line join=round]\n"
+           + panel_a(zoom) + pb +
+           f"""
+% panel letters
+\\node[anchor=north west, inner sep=0pt, font=\\sffamily\\bfseries\\small] at (0,{A_HEIGHT + 5:.1f}) {{(a)}};
+\\node[anchor=north west, inner sep=0pt, font=\\sffamily\\bfseries\\small] at ({B_LEFT - 2:.1f},{A_HEIGHT + 5:.1f}) {{(b)}};
+
+\\end{{tikzpicture}}
+\\end{{document}}
+""")
+    tex = tex.replace("\n\n\n", "\n\n")
+    path.write_text(tex)
+    print(f"wrote {path.name}: {len(tex.splitlines())} lines, panel (b) scale {sb:.3f}")
+
+
+if __name__ == "__main__":
+    build(HERE / "fig_setup_typeiv_tikz.tex",
+          "Computational set-up and Edney type IV shock structure",
+          ZOOM_CLEAN, labels_clean, detailed=False)
+    build(HERE / "fig_setup_typeiv_detailed_tikz.tex",
+          "Computational set-up and Edney type IV shock structure (detailed)",
+          ZOOM_DET, labels_detailed, detailed=True,
+          extra="%  Jet shock cells and expansion fans are schematic (drawn steeper than\n"
+                "%  the jet Mach angle for legibility).\n")

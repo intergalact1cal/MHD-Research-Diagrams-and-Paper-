@@ -377,6 +377,5 @@ if __name__ == "__main__":
     print(f"theta = {np.degrees(THETA):.2f} deg, M2 = {M_2:.3f}")
     print(f"T1 = ({T1[0]:.1f}, {T1[1]:.1f}) mm, phi = {np.degrees(np.arctan2(T1[1], -T1[0])):.1f} deg")
     print(f"T2 = ({T2[0]:.1f}, {T2[1]:.1f}) mm, phi = {np.degrees(np.arctan2(T2[1], -T2[0])):.1f} deg")
-    for ext in ("pdf", "svg"):
-        fig.savefig(HERE / f"fig_setup_typeiv.{ext}")
-    fig.savefig(HERE / "fig_setup_typeiv.png", dpi=600)
+    # quick matplotlib preview; the figures for the paper are the TikZ files
+    fig.savefig(HERE / "preview_setup_typeiv.png", dpi=200)
