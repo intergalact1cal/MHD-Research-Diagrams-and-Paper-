@@ -38,9 +38,13 @@ Units are mm, with the origin at the cylinder centre.
   width, 4.5 mm, is the triple-point separation normal to that direction.
   This is why the jet is long and thin, as in the classical type IV sketches.
 
-Schematic only: the jet's curvature toward the wall (20°), the impingement
-point (φ ≈ −27.5°), the jet bow shock stand-off (≈ 3.8 mm), the shear layers
-past the jet bow shock, and the shock-cell pattern. The cells are drawn
+Schematic only, drawn after the classical type IV sketch (Edney 1968): the
+jet's arch (a circular arc turning 36°), the jet bow shock (a short, nearly
+normal shock closing the jet about 4 mm off the wall), and the shear layers,
+which turn sharply at its ends and run along the wall either side of the
+impingement point. The detailed version also shows the jet's shock cells:
+compressions converging on one boundary and an expansion fan spreading from
+that point, repeated, starting at the lower triple point. The cells are drawn
 steeper than the jet Mach angle (≈ 25°) for legibility.
 
 ### Regenerating

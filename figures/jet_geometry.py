@@ -13,6 +13,7 @@ pattern) is schematic.
 Coordinates: mm, origin at the cylinder centre, x downstream, y up.
 """
 import numpy as np
+from scipy.optimize import brentq
 
 import fig_setup_typeiv as g
 
@@ -44,61 +45,53 @@ N0 = np.array([-np.sin(DELTA0), np.cos(DELTA0)])
 WIDTH = float((T1 - T2) @ N0)
 H = 0.5 * WIDTH
 
-# schematic downstream part
-TURN = np.radians(24.0)          # total turning of the jet toward the wall normal
-PHI_IMP = np.radians(-27.5)      # impingement point on the wall (from stagnation)
-STANDOFF = 0.85 * WIDTH          # jet bow shock stand-off from the wall
+# schematic downstream part (shape after the classical type IV sketches):
+# the jet follows a circular arc, turning by TURN, and ends in the jet bow
+# shock STANDOFF from the wall.
+TURN = np.radians(36.0)
+STANDOFF = 0.9 * WIDTH
 DELTA1 = DELTA0 + TURN
 D1 = np.array([np.cos(DELTA1), np.sin(DELTA1)])
 N1 = np.array([-np.sin(DELTA1), np.cos(DELTA1)])
 
-WALL_IMP = np.array([-R * np.cos(PHI_IMP), R * np.sin(PHI_IMP)])
-
-
-def _wall_hit(p, d):
-    """First intersection of the ray p + s d with the cylinder."""
-    b = p @ d
-    c = p @ p - R**2
-    return p + (-b - np.sqrt(b * b - c)) * d
-
-
 C0 = T2 + H * N0                                   # jet centreline start
-JC = _wall_hit(WALL_IMP - 30 * D1, D1) - STANDOFF * D1   # jet bow-shock centre
-# quadratic centreline: tangent D0 at C0, tangent D1 at JC (uniform turning)
-_A = np.c_[D0, -D1]
-_u = np.linalg.solve(_A, JC - C0)
-CTRL = (C0, C0 + _u[0] * D0, JC)
 
 
-def centreline(n=200):
-    t = np.linspace(0, 1, n)[:, None]
-    P0, P1, P2 = CTRL
-    c = (1 - t)**2 * P0 + 2 * (1 - t) * t * P1 + t**2 * P2
-    dc = 2 * (1 - t) * (P1 - P0) + 2 * t * (P2 - P1)
-    tang = dc / np.linalg.norm(dc, axis=1, keepdims=True)
-    nrm = np.c_[-tang[:, 1], tang[:, 0]]
-    s = np.r_[0, np.cumsum(np.linalg.norm(np.diff(c, axis=0), axis=1))]
+def _arc_point(rho, delta):
+    centre = C0 + rho * N0
+    return centre + rho * np.array([np.sin(delta), -np.cos(delta)])
+
+
+def _end_gap(rho):
+    return np.linalg.norm(_arc_point(rho, DELTA1)) - (R + STANDOFF)
+
+
+RHO = brentq(_end_gap, 2.0, 80.0)                  # radius of curvature of the jet
+JC = _arc_point(RHO, DELTA1)                       # jet bow-shock centre
+PHI_IMP = np.arctan2(JC[1], -JC[0])                # impingement direction
+WALL_IMP = R * np.array([-np.cos(PHI_IMP), np.sin(PHI_IMP)])
+
+
+def centreline(n=240):
+    d = np.linspace(DELTA0, DELTA1, n)
+    c = np.array([_arc_point(RHO, x) for x in d])
+    nrm = np.c_[-np.sin(d), np.cos(d)]
+    s = RHO * (d - DELTA0)
     return c, nrm, s
 
 
 C, NRM, S = centreline()
-JS_EXT, JS_BULGE = 1.18, 0.45
-
-
-def _shock_point(side):
-    """Where the jet boundary on `side` meets the jet bow shock."""
-    return JC + side * H * N1 + JS_BULGE * H * (1 / JS_EXT)**2 * D1
-
 
 # boundaries run from the triple points to the jet bow shock
-UPPER = np.r_[C + H * NRM, _shock_point(+1)[None, :]]   # starts on the line through T1
-LOWER = np.r_[C - H * NRM, _shock_point(-1)[None, :]]   # starts at T2
+UPPER = C + H * NRM            # starts on the line through T1
+LOWER = C - H * NRM            # starts at T2
 UPPER_FULL = np.r_[T1[None, :], UPPER]
+UPPER_END, LOWER_END = UPPER[-1], LOWER[-1]
 
 
 def at(s_frac, side):
     """Point on a jet boundary (side=+1 upper, -1 lower) at fraction of length."""
-    s = s_frac * S[-1]
+    s = np.clip(s_frac, 0, 1) * S[-1]
     i = np.searchsorted(S, s).clip(1, len(S) - 1)
     a = (s - S[i - 1]) / (S[i] - S[i - 1])
     c = C[i - 1] + a * (C[i] - C[i - 1])
@@ -106,66 +99,65 @@ def at(s_frac, side):
     return c + side * H * n / np.linalg.norm(n)
 
 
-def jet_shock(n=30, ext=JS_EXT, bulge=JS_BULGE):
-    """Jet bow shock: short, slightly curved, convex toward the oncoming jet."""
-    s = np.linspace(-ext * H, ext * H, n)[:, None]
-    return JC + s * N1 + bulge * H * (s / (ext * H))**2 * D1
+def jet_shock():
+    """Jet bow shock: a short, nearly normal shock closing the end of the jet."""
+    return np.array([UPPER_END, LOWER_END])
 
 
-def after_shock(side, n=40, spread_deg=15.0, gap=0.9):
-    """Shear layer past the jet bow shock, turning onto the wall as a wall jet.
+jet_shock_between = jet_shock
 
-    Leaves the jet bow shock along the jet direction and ends `gap` mm off the
-    wall, `spread_deg` from the impingement point, running parallel to it.
+
+def _polar(p):
+    return np.hypot(*p), np.arctan2(p[1], -p[0])
+
+
+def after_shock(side, n=30, sweep_deg=17.0, approach=0.45):
+    """Shear layer beyond the jet bow shock.
+
+    It turns sharply at the end of the jet bow shock and runs along the wall,
+    away from the impingement point (upper boundary upward, lower boundary
+    downward), closing in on the wall from the jet-shock stand-off to
+    `approach` times that distance.
     """
-    p0 = _shock_point(side)
-    phi_end = PHI_IMP + side * np.radians(spread_deg)
-    p3 = (R + gap) * np.array([-np.cos(phi_end), np.sin(phi_end)])
-    tw = side * np.array([np.sin(phi_end), np.cos(phi_end)])   # along the wall, away
-    dist = np.linalg.norm(p3 - p0)
-    d_start = D1 + 0.8 * tw
-    d_start /= np.linalg.norm(d_start)
-    p1 = p0 + 0.35 * dist * d_start
-    p2 = p3 - 0.45 * dist * tw
-    t = np.linspace(0, 1, n)[:, None]
-    return (1 - t)**3 * p0 + 3 * (1 - t)**2 * t * p1 + 3 * (1 - t) * t**2 * p2 + t**3 * p3
+    p0 = UPPER_END if side > 0 else LOWER_END
+    r0, phi0 = _polar(p0)
+    phi = phi0 + side * np.linspace(0, np.radians(sweep_deg), n)
+    r = r0 + (R + approach * (r0 - R) - r0) * np.linspace(0, 1, n)
+    return np.c_[-r * np.cos(phi), r * np.sin(phi)]
 
 
-def jet_shock_between(n=20):
-    """Part of the jet bow shock between the two jet boundaries (upper -> lower)."""
-    s = np.linspace(H, -H, n)[:, None]
-    return JC + s * N1 + JS_BULGE * H * (s / (JS_EXT * H))**2 * D1
+def wave_pattern(n_cells=2, first=0.2, last=0.86,
+                 fan=(0.22, 0.42, 0.62, 0.82), comp=(0.12, 0.32, 0.52, 0.72)):
+    """Shock-cell structure of the jet, as in the classical type IV sketch.
 
-
-def wave_pattern(shock_deg=52.0, fan_deg=(43.0, 52.0, 63.0), end=0.97):
-    """Shock (solid) / expansion-fan (dashed) cells reflecting off the jet boundaries.
-
-    A compression starting at the lower triple point crosses the jet, reflects
-    from the constant-pressure upper boundary as an expansion fan, which
-    reflects back as compressions, and so on until the jet bow shock.
-    Waves are inclined at shock_deg / fan_deg to the local jet axis (the Mach
-    angle of the jet is about 25 deg; the cells are drawn shorter (steeper)
-    for legibility).  Returns (shocks, fans) as lists of 2-point segments.
+    The wave starting at the lower triple point T2 crosses the jet to a point
+    F0 on the upper (T1-side) boundary.  From each focus F_k an expansion fan
+    (dashed) spreads to the lower boundary; compressions (solid) leave the
+    lower boundary and converge on the next focus F_k+1, and so on to the jet
+    bow shock.  Positions are fractions of the jet length; the cells are
+    schematic (drawn steeper than the jet Mach angle, about 25 deg).
+    Returns (shocks, fans) as lists of 2-point segments.
     """
-    shocks, fans = [], []
-    L = S[-1]
-    s, side = 0.0, -1
-    while True:
-        s1 = s + WIDTH / np.tan(np.radians(shock_deg))
-        if s1 > end * L:
-            break
-        shocks.append((at(s / L, side), at(s1 / L, -side)))
-        land = [s1 + WIDTH / np.tan(np.radians(a)) for a in fan_deg]
-        for sl in land:
-            if sl <= end * L:
-                fans.append((at(s1 / L, -side), at(sl / L, side)))
-        s = land[0]
-        if s > end * L:
-            break
+    shocks = [(T2.copy(), at(first, +1))]
+    fans = []
+    cell = (last - first) / n_cells
+    for k in range(n_cells + 1):
+        fk = first + k * cell
+        if k < n_cells:
+            for a in fan:
+                fans.append((at(fk, +1), at(fk + a * cell, -1)))
+            for a in comp:
+                shocks.append((at(fk + a * cell, -1), at(fk + cell, +1)))
+        else:
+            # last focus: a short fan toward the jet bow shock
+            for a in fan[:2]:
+                if fk + a * cell <= 0.995:
+                    fans.append((at(fk, +1), at(fk + a * cell, -1)))
     return shocks, fans
 
 
 if __name__ == "__main__":
     print(f"transmitted shock {np.degrees(SIGMA):.2f} deg, wave angle {np.degrees(BETA_T):.2f} deg")
     print(f"jet direction {np.degrees(DELTA0):.2f} deg, M_jet = {M_JET:.2f}, width = {WIDTH:.2f} mm")
-    print("jet shock centre", JC, "r =", np.linalg.norm(JC), "length", S[-1])
+    print("jet shock centre", JC, "r =", np.linalg.norm(JC), "length", S[-1],
+          "rho", RHO, "phi_imp", np.degrees(PHI_IMP))

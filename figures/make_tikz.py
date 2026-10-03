@@ -90,8 +90,8 @@ LBL150 = 0.70 * Q1 + 5.5 * _n
 ROT150 = np.degrees(np.arctan2(_d[1], _d[0]))
 ROT150 = ROT150 - 180 if ROT150 > 90 else ROT150 + 180 if ROT150 < -90 else ROT150
 
-JET_FILL = np.r_[jg.UPPER_FULL, jg.jet_shock_between()[1:-1], jg.LOWER[::-1], TRANS[::-1][1:]]
-JSHOCK = jg.jet_shock(30)
+JET_FILL = np.r_[jg.UPPER_FULL, jg.LOWER[::-1], TRANS[::-1][1:]]
+JSHOCK = jg.jet_shock()                     # straight, nearly normal to the jet
 AFTER_U, AFTER_L = jg.after_shock(+1, 30), jg.after_shock(-1, 30)
 SHOCKS, FANS = jg.wave_pattern()
 
@@ -137,8 +137,9 @@ PREAMBLE = r"""\documentclass[border=1.5pt]{standalone}
   shockB/.style={draw=ink, line width=1.15pt},
   jetshock/.style={draw=ink, line width=1.0pt},
   shear/.style={draw=ink, line width=0.7pt, dash pattern=on 2.4pt off 1.4pt, line cap=butt},
-  cellshock/.style={draw=jetedge, line width=0.45pt},
-  fan/.style={draw=jetedge, line width=0.35pt, dash pattern=on 1.1pt off 0.9pt, line cap=butt},
+  cellshock/.style={draw=ink, line width=0.4pt},
+  fan/.style={draw=ink, line width=0.4pt, dash pattern=on 1.3pt off 0.8pt, line cap=butt},
+  hatch/.style={draw=dimgrey, line width=0.35pt, line cap=butt},
   flow/.style={line width=0.9pt, -{Stealth[length=2.6mm, width=1.9mm]}},
   jetflow/.style={draw=ink, line width=0.7pt, -{Stealth[length=1.9mm, width=1.4mm]}},
   dim/.style={draw=dimgrey, line width=0.45pt,
@@ -252,7 +253,7 @@ def panel_a(zoom):
   % window shown in (b)
   \draw[ink, line width=0.4pt, dash pattern=on 1.6pt off 1.2pt, line cap=butt]
     ({f(zx0)},{f(zy0)}) rectangle ({f(zx1)},{f(zy1)});
-  \node[lbl, small, anchor=north west, inner sep=1.5pt] at ({f(zx0)},{f(zy1)}) {{(b)}};
+  \node[lbl, small, anchor=south west, inner sep=1.2pt] at ({f(zx0)},{f(zy1)}) {{(b)}};
 \end{{scope}}
 """
 
@@ -277,15 +278,11 @@ def panel_b(zoom, labels, detailed):
     \clip ({f(zx0)},{f(zy0)}) rectangle ({f(zx1)},{f(zy1)});
 
     % body and wall
-    \fill[bodygrey] (0,0) circle[radius={R}];
-    \draw[noslip, line width=2pt] ({tk(PHI_NS)}:{R}) arc[start angle={tk(PHI_NS)}, end angle={tk(-PHI_NS)}, radius={R}];
+{body_b(detailed)}    \draw[noslip, line width=2pt] ({tk(PHI_NS)}:{R}) arc[start angle={tk(PHI_NS)}, end angle={tk(-PHI_NS)}, radius={R}];
     \draw[slip, line width=2pt] ({tk(PHI_OUT)}:{R}) arc[start angle={tk(PHI_OUT)}, end angle={tk(PHI_NS)}, radius={R}];
     \draw[slip, line width=2pt] ({tk(-PHI_NS)}:{R}) arc[start angle={tk(-PHI_NS)}, end angle={tk(-PHI_OUT)}, radius={R}];
 
-    % supersonic jet: transmitted shock, shear layers and jet bow shock
-    \fill[jetfill]
-      {poly(JET_FILL, 2)} -- cycle;
-
+{jet_fill(detailed)}
     % bow shock above and below the interaction, incident shock
     \draw[shockB]
       {poly(up_b)};
@@ -328,6 +325,28 @@ def panel_b(zoom, labels, detailed):
     return "".join(out), sb
 
 
+def body_b(detailed):
+    if not detailed:
+        return f"    \\fill[bodygrey] (0,0) circle[radius={R}];\n"
+    # white body with hatching along the surface, as in the classical sketch
+    out = [f"    \\fill[white] (0,0) circle[radius={R}];\n",
+           "    \\begin{scope}\n",
+           f"      \\clip (0,0) circle[radius={R}];\n"]
+    d = np.array([np.cos(np.radians(-50)), np.sin(np.radians(-50))])
+    for phi in np.arange(-60, 60.01, 2.4):
+        p = wall(phi)
+        out.append(f"      \\draw[hatch] {pt(p - 0.2 * d)} -- {pt(p + 3.2 * d)};\n")
+    out.append("    \\end{scope}\n")
+    return "".join(out)
+
+
+def jet_fill(detailed):
+    if detailed:
+        return ""
+    return ("    % supersonic jet (light fill)\n    \\fill[jetfill]\n      "
+            + poly(JET_FILL, 2) + " -- cycle;\n")
+
+
 def leader(text, at, target, anchor, frm=None, style="lbl", name=None):
     frm = frm or {"east": "east", "west": "west", "north": "north", "south": "south",
                   "north east": "north east", "north west": "north west",
@@ -339,7 +358,7 @@ def leader(text, at, target, anchor, frm=None, style="lbl", name=None):
 
 
 # ---- labels (both versions use the same close-up window)
-ZOOM = (-86.0, -30.0, -42.0, 16.0)
+ZOOM = (-82.0, -30.0, -40.0, 12.0)
 
 
 def wedge_point(x):
@@ -350,50 +369,53 @@ def wedge_point(x):
 
 
 def common_labels(detailed):
-    a0 = wedge_point(-62.5)
+    a0 = wedge_point(-61.5)
     s = rf"""
   % jet direction (upstream of the shock cells)
   \draw[jetflow] {pt(a0)} -- {pt(a0 + 4.2 * jg.D0)};
 
   % inflow
-  \foreach \yy in {{10.5, 6.5}} {{\draw[flow, freeblue] (-85,\yy) -- ++(7.5,0);}}
-  \node[lbl, text=freeblue, anchor=south west] at (-85.6,12.3) {{$M_\infty$ = 8.03}};
-  \foreach \yy in {{-36.5, -40.5}} {{\draw[flow, postgreen] (-85,\yy) -- ++({THETA:.2f}:7.6);}}
-  \node[lbl, text=postgreen, anchor=south west] at (-85.6,-34.6) {{$M_2$ = 5.25}};
+  \foreach \yy in {{8.5, 4.8}} {{\draw[flow, freeblue] (-81.2,\yy) -- ++(6,0);}}
+  \node[lbl, text=freeblue, anchor=south west] at (-81.8,9.9) {{$M_\infty$ = 8.03}};
+  \foreach \yy in {{-35, -38.6}} {{\draw[flow, postgreen] (-81.2,\yy) -- ++({THETA:.2f}:6.1);}}
+  \node[lbl, text=postgreen, anchor=south west] at (-81.8,-33.4) {{$M_2$ = 5.25}};
 
   % scale bar
-  \draw[ink, line width=0.8pt, line cap=butt] (-58,13) -- (-48,13);
-  \draw[ink, line width=0.6pt] (-58,12.4) -- (-58,13.6) (-48,12.4) -- (-48,13.6);
-  \node[lbl, small, anchor=north] at (-53,12.2) {{10\,mm}};
+  \draw[ink, line width=0.8pt, line cap=butt] (-51,10) -- (-41,10);
+  \draw[ink, line width=0.6pt] (-51,9.5) -- (-51,10.5) (-41,9.5) -- (-41,10.5);
+  \node[lbl, small, anchor=north] at (-46,9.3) {{10\,mm}};
 
   % labels
 """
-    s += leader("bow shock", (-69.5, 3.5), g.upper_bow(3.5), "west")
-    s += leader(r"upper\\[-0.4ex]triple point", (-79.5, -3), T1, "center", frm="south east")
-    s += leader("incident shock", (-77, -15.5), (-80, g.incident(-80)), "north")
-    s += leader("transmitted shock", (-66, -22.5), TRANS[20], "north")
-    s += leader("lower triple point", (-60, -30.5), T2, "north")
-    s += leader("shear layers", (-57, -2), jg.UPPER_FULL[24], "south", name="lsl")
-    s += f"  \\draw[leader] (lsl.south) -- {pt(jg.at(0.36, -1))};\n"
-    s += leader(r"jet bow\\[-0.4ex]shock", (-35.5, -29.5), JSHOCK[1], "north")
+    s += leader("bow shock", (-68.5, 2.5), g.upper_bow(2.5), "west")
+    s += leader(r"upper\\[-0.4ex]triple point", (-66.5, -3.5), T1, "west", frm="west")
+    s += leader("incident shock", (-75.5, -14.3), (-78, g.incident(-78)), "north")
+    s += leader("transmitted shock", (-64, -21.5), TRANS[20], "north")
+    s += leader("lower triple point", (-59, -28.5), T2, "north")
+    sl_a = 0.5 * (T1 + jg.UPPER[0])
+    s += leader("shear layers", (-51.5, -3), sl_a, "south", name="lsl")
+    s += f"  \\draw[leader] (lsl.south) -- {pt(jg.at(0.62, +1))};\n"
+    s += f"  \\draw[leader] (lsl.south) -- {pt(jg.at(0.1, -1))};\n"
+    s += leader(r"jet bow\\[-0.4ex]shock", (-40.5, -25.5), 0.4 * jg.UPPER_END + 0.6 * jg.LOWER_END, "north")
     if detailed:
         s += r"""
   % Mach-number regions
-  \node[region] at (-80.5,2.8) {$M > 1$};
-  \node[region] at (-81,-25) {$M > 1$};
-  \node[region] at (-62,8.8) {$M < 1$};
-  \node[region] at (-36.5,-38.5) {$M < 1$};
+  \node[region] at (-78,1.5) {$M > 1$};
+  \node[region] at (-77.5,-23) {$M > 1$};
+  \node[region] at (-61,8) {$M < 1$};
+  \node[region] at (-33.5,-31.5) {$M < 1$};
 
   % key for the wave pattern inside the jet
-  \draw[cellshock, line width=0.6pt] (-74,-36) -- ++(5,0);
-  \node[lbl, small, anchor=west] at (-68.6,-36) {compression};
-  \draw[fan, line width=0.5pt] (-74,-39.8) -- ++(5,0);
-  \node[lbl, small, anchor=west] at (-68.6,-39.8) {expansion fan};
+  \draw[cellshock, line width=0.5pt] (-72,-34.6) -- ++(4,0);
+  \node[lbl, small, anchor=west] at (-67.6,-34.6) {compression};
+  \draw[fan, line width=0.5pt] (-72,-38) -- ++(4,0);
+  \node[lbl, small, anchor=west] at (-67.6,-38) {expansion fan};
 """
-        s += f"  \\node[dot] at {pt(jet_mid(0.6))} {{}};\n"
-        s += leader(r"jet, $M > 1$", (-43.5, 3.5), jet_mid(0.6), "south")
+        s += leader("bow shock", (-40.5, -38), g.lower_bow(-24.5), "west")
+        s += f"  \\node[dot] at {pt(jet_mid(0.52))} {{}};\n"
+        s += leader(r"jet, $M > 1$", (-44.5, 2.5), jet_mid(0.52), "south")
     else:
-        s += leader(r"supersonic\\[-0.4ex]jet", (-44.5, 2.5), jet_mid(0.72), "south")
+        s += leader(r"supersonic\\[-0.4ex]jet", (-44.5, 2.5), jet_mid(0.52), "south")
     return s
 
 
