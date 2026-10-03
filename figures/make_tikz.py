@@ -1,11 +1,11 @@
-"""Write fig_setup_typeiv.tex: a self-contained TikZ figure (compiles on Overleaf).
+"""Write fig_setup_typeiv_tikz.tex: a self-contained TikZ figure (compiles on Overleaf).
 
 All geometry comes from fig_setup_typeiv.py (the same shock fits and case
 parameters); this script only converts it to TikZ coordinates, so the
 .tex needs no data files.  Data units are millimetres, origin at the
 cylinder centre, x downstream, y up.
 
-    python3 make_tikz.py && pdflatex fig_setup_typeiv.tex
+    python3 make_tikz.py && pdflatex fig_setup_typeiv_tikz.tex
 """
 from pathlib import Path
 
@@ -20,7 +20,7 @@ SA = 0.30
 SB = 1.03
 A_ORIGIN = (218 * SA, 152 * SA)            # panel (a) data x in [-218, 52]
 ZX0, ZX1, ZY0, ZY1 = g.ZOOM                # panel (b) window
-B_ORIGIN = (90 - ZX0 * SB, -ZY0 * SB + (304 * SA - (ZY1 - ZY0) * SB) / 2)
+B_ORIGIN = (94 - ZX0 * SB, -ZY0 * SB + (304 * SA - (ZY1 - ZY0) * SB) / 2)
 
 R = g.R
 RO = g.R_OUT
@@ -150,13 +150,15 @@ tex = rf"""% ===================================================================
 %        Upper triple point ({T1[0]:.1f}, {T1[1]:.1f}) mm, lower ({T2[0]:.1f}, {T2[1]:.1f}) mm.
 %
 %  To use inside a paper instead of standalone, copy the tikzpicture together
-%  with the colour/style definitions and load tikz, helvet and sansmath.
+%  with the colour/style definitions and load tikz, helvet, newtxsf and mathastext.
 % ==========================================================================
 \documentclass[border=1.5pt]{{standalone}}
 \usepackage[T1]{{fontenc}}
 \usepackage{{textcomp}}
 \usepackage[scaled=0.92]{{helvet}}
-\usepackage{{sansmath}}
+\renewcommand{{\familydefault}}{{\sfdefault}}
+\usepackage{{newtxsf}}               % sans-serif Greek
+\usepackage[italic,defaultmathsizes]{{mathastext}}  % Latin letters and digits in math from Helvetica
 \usepackage{{tikz}}
 \usetikzlibrary{{arrows.meta,calc}}
 
@@ -172,7 +174,7 @@ tex = rf"""% ===================================================================
 \definecolor{{jetfill}}{{HTML}}{{FBF1E3}}
 
 \begin{{document}}
-\sffamily\sansmath\footnotesize
+\sffamily\footnotesize
 \begin{{tikzpicture}}[
     x=1mm, y=1mm,
     line cap=round, line join=round,
@@ -239,15 +241,15 @@ tex = rf"""% ===================================================================
   \draw[noslip] ({tk(PHI_NS)}:{R}) arc[start angle={tk(PHI_NS)}, end angle={tk(-PHI_NS)}, radius={R}];
 
   % cylinder centre
-  \draw[ink, line width=0.5pt] (-4,0) -- (4,0) (0,-4) -- (0,4);
+  \draw[ink, line width=0.5pt] (-3.5,0) -- (3.5,0) (0,-3.5) -- (0,3.5);
 
   % inlet split and shock angle beta
   \draw[dimgrey, line width=0.4pt, dash pattern=on 0.8pt off 1pt] {pt(split)} -- ++(48,0);
   \draw[ink, line width=0.45pt] {pt(split)} ++(36,0) arc[start angle=0, end angle={BETA}, radius=36];
-  \node[lbl, anchor=north west] at {pt(split + [6, -2.5])} {{$\beta = 18.1$\textdegree}};
+  \node[lbl, anchor=north west] at {pt(split + [6, -2.5])} {{$\beta = 18.1^\circ$}};
   \filldraw[fill=white, draw=ink, line width=0.75pt] {pt(split)} circle[radius=4.2];
   \node[lbl, small, text=dimgrey, anchor=south east, align=right] at {pt(split + [-6, 7])}
-    {{inlet split\\[-0.3ex]$\phi = {PHI_SPLIT}$\textdegree}};
+    {{inlet split\\[-0.3ex]$\phi = {PHI_SPLIT}^\circ$}};
 
   % inflow
   \foreach \yy in {{116, 94, 72}} {{\draw[flow, freeblue] (-214,\yy) -- ++(30,0);}}
@@ -258,8 +260,8 @@ tex = rf"""% ===================================================================
     {{post-shock inlet\\$M_2 = 5.25$}};
 
   % boundary labels
-  \node[lbl, anchor=center] (ns) at (8,19) {{no-slip wall\\$T_w = 294$\,K}};
-  \draw[leader] (ns.west) -- {pt(wall(18))};
+  \node[lbl, anchor=center] (ns) at (5,15) {{no-slip wall\\$T_w = 294$\,K}};
+  \draw[leader] (ns.west) -- {pt(wall(15))};
   \node[lbl, anchor=west] (sw) at (24,64) {{slip wall}};
   \draw[leader] (sw.west) -- {pt(wall(56))};
   \node[lbl, text=dimgrey, anchor=west] (o1) at (-2,128) {{outlet}};
@@ -270,8 +272,8 @@ tex = rf"""% ===================================================================
   \draw[leader] (bs.south east) ++(-6,0.5) -- {pt(bow_at(72.0))};
 
   % dimensions
-  \draw[dim] (0,0) -- (0:{R});
-  \node[lbl, anchor=north] at ({R / 2 + 1:.2f},-3) {{$R = {R}$\,mm}};
+  \draw[dim] (0,0) -- (-45:{R});
+  \node[lbl, anchor=north] at ({R * 0.7071 + 6:.2f},{-R * 0.7071 - 4.5:.2f}) {{$R = {R}$\,mm}};
   \draw[dim] (0,0) -- ({tk(pd)}:{RO});
   \node[lbl, small, text=dimgrey, rotate={rot150:.2f}] at {pt(lbl150)} {{{RO:.0f}\,mm}};
 
@@ -363,11 +365,11 @@ tex = rf"""% ===================================================================
 
 % panel letters
 \node[anchor=north west, inner sep=0pt, font=\sffamily\bfseries\small] at (0,{304 * SA + 5:.1f}) {{(a)}};
-\node[anchor=north west, inner sep=0pt, font=\sffamily\bfseries\small] at (88,{304 * SA + 5:.1f}) {{(b)}};
+\node[anchor=north west, inner sep=0pt, font=\sffamily\bfseries\small] at (92,{304 * SA + 5:.1f}) {{(b)}};
 
 \end{{tikzpicture}}
 \end{{document}}
 """
 
-(HERE / "fig_setup_typeiv.tex").write_text(tex)
-print("wrote", HERE / "fig_setup_typeiv.tex", len(tex.splitlines()), "lines")
+(HERE / "fig_setup_typeiv_tikz.tex").write_text(tex)
+print("wrote", HERE / "fig_setup_typeiv_tikz.tex", len(tex.splitlines()), "lines")

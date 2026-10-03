@@ -17,13 +17,15 @@
 %        Upper triple point (-72.0, -7.5) mm, lower (-50.9, -17.8) mm.
 %
 %  To use inside a paper instead of standalone, copy the tikzpicture together
-%  with the colour/style definitions and load tikz, helvet and sansmath.
+%  with the colour/style definitions and load tikz, helvet, newtxsf and mathastext.
 % ==========================================================================
 \documentclass[border=1.5pt]{standalone}
 \usepackage[T1]{fontenc}
 \usepackage{textcomp}
 \usepackage[scaled=0.92]{helvet}
-\usepackage{sansmath}
+\renewcommand{\familydefault}{\sfdefault}
+\usepackage{newtxsf}               % sans-serif Greek
+\usepackage[italic,defaultmathsizes]{mathastext}  % Latin letters and digits in math from Helvetica
 \usepackage{tikz}
 \usetikzlibrary{arrows.meta,calc}
 
@@ -39,7 +41,7 @@
 \definecolor{jetfill}{HTML}{FBF1E3}
 
 \begin{document}
-\sffamily\sansmath\footnotesize
+\sffamily\footnotesize
 \begin{tikzpicture}[
     x=1mm, y=1mm,
     line cap=round, line join=round,
@@ -140,15 +142,15 @@
   \draw[noslip] (135.0:38.1) arc[start angle=135.0, end angle=225.0, radius=38.1];
 
   % cylinder centre
-  \draw[ink, line width=0.5pt] (-4,0) -- (4,0) (0,-4) -- (0,4);
+  \draw[ink, line width=0.5pt] (-3.5,0) -- (3.5,0) (0,-3.5) -- (0,3.5);
 
   % inlet split and shock angle beta
   \draw[dimgrey, line width=0.4pt, dash pattern=on 0.8pt off 1pt] (-146.58,-31.83) -- ++(48,0);
   \draw[ink, line width=0.45pt] (-146.58,-31.83) ++(36,0) arc[start angle=0, end angle=18.100000000000005, radius=36];
-  \node[lbl, anchor=north west] at (-140.58,-34.33) {$\beta = 18.1$\textdegree};
+  \node[lbl, anchor=north west] at (-140.58,-34.33) {$\beta = 18.1^\circ$};
   \filldraw[fill=white, draw=ink, line width=0.75pt] (-146.58,-31.83) circle[radius=4.2];
   \node[lbl, small, text=dimgrey, anchor=south east, align=right] at (-152.58,-24.83)
-    {inlet split\\[-0.3ex]$\phi = -12.25$\textdegree};
+    {inlet split\\[-0.3ex]$\phi = -12.25^\circ$};
 
   % inflow
   \foreach \yy in {116, 94, 72} {\draw[flow, freeblue] (-214,\yy) -- ++(30,0);}
@@ -159,8 +161,8 @@
     {post-shock inlet\\$M_2 = 5.25$};
 
   % boundary labels
-  \node[lbl, anchor=center] (ns) at (8,19) {no-slip wall\\$T_w = 294$\,K};
-  \draw[leader] (ns.west) -- (-36.24,11.77);
+  \node[lbl, anchor=center] (ns) at (5,15) {no-slip wall\\$T_w = 294$\,K};
+  \draw[leader] (ns.west) -- (-36.8,9.86);
   \node[lbl, anchor=west] (sw) at (24,64) {slip wall};
   \draw[leader] (sw.west) -- (-21.31,31.59);
   \node[lbl, text=dimgrey, anchor=west] (o1) at (-2,128) {outlet};
@@ -171,8 +173,8 @@
   \draw[leader] (bs.south east) ++(-6,0.5) -- (-48.34,72);
 
   % dimensions
-  \draw[dim] (0,0) -- (0:38.1);
-  \node[lbl, anchor=north] at (20.05,-3) {$R = 38.1$\,mm};
+  \draw[dim] (0,0) -- (-45:38.1);
+  \node[lbl, anchor=north] at (32.94,-31.44) {$R = 38.1$\,mm};
   \draw[dim] (0,0) -- (217.0:150.0);
   \node[lbl, small, text=dimgrey, rotate=37.00] at (-87.17,-58.8) {150\,mm};
 
@@ -185,7 +187,7 @@
 % ==========================================================================
 %  (b)  type IV interaction          scale 1.03 : 1
 % ==========================================================================
-\begin{scope}[shift={(193,51.78)}, x=1.03mm, y=1.03mm]
+\begin{scope}[shift={(197,51.78)}, x=1.03mm, y=1.03mm]
   \begin{scope}
     \clip (-100.0,-50.0) rectangle (-26.0,38.0);
 
@@ -325,7 +327,7 @@
 
 % panel letters
 \node[anchor=north west, inner sep=0pt, font=\sffamily\bfseries\small] at (0,96.2) {(a)};
-\node[anchor=north west, inner sep=0pt, font=\sffamily\bfseries\small] at (88,96.2) {(b)};
+\node[anchor=north west, inner sep=0pt, font=\sffamily\bfseries\small] at (92,96.2) {(b)};
 
 \end{tikzpicture}
 \end{document}
