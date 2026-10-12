@@ -1,33 +1,30 @@
 # Figures
 
-Each `.tex` is a complete standalone LaTeX document drawn at its final print
-size. Each `.pdf` is the compiled vector figure, and each `.png` is a 600 dpi
-preview.
+| file | content |
+|---|---|
+| `fig_setup.tex` / `.pdf` / `.png` | **(a)** domain, boundary conditions and grid; **(b)** Edney type IV interaction with the jet shock cells; **(c)** grid in the shock layer at the stagnation point |
+| `fig_setup_clean.*` | same, with a simpler (b): no shock cells, shaded jet |
 
-| file | content | print size |
-|---|---|---|
-| `fig_domain` | computational domain and boundary conditions, panel (a) | 84 × 88 mm |
-| `fig_typeiv` | Edney type IV interaction close-up, panel (b) | 83 × 88 mm |
-| `fig_typeiv_detailed` | same, with the jet's shock cells and Mach-number regions, panel (b) | 83 × 88 mm |
-| `fig_mesh` | computational grid: (a) full grid, (b) shock layer, (c) near-wall cells | 170 × 114 mm |
-
-`fig_domain` and `fig_typeiv*` are each about 82 mm wide, so they sit side by
-side in a 170 mm text width at full size, with 9 pt labels:
+The figure is drawn at its print size, **170 × 108 mm**, with 9 pt and 8 pt
+labels. Include it at full text width:
 
 ```latex
 \begin{figure*}
   \centering
-  \includegraphics{fig_domain.pdf}\hfill
-  \includegraphics{fig_typeiv_detailed.pdf}
-  \caption{(a) Computational domain and boundary conditions; the dashed box is
-  the region shown in (b). (b) Edney type IV interaction: solid lines inside
-  the jet are compressions, dashed lines expansion fans.}
+  \includegraphics[width=\textwidth]{fig_setup.pdf}
+  \caption{(a) Computational domain, boundary conditions and grid (every 8th
+  radial line shown); dashed and red boxes mark (b) and (c).
+  (b) Edney type IV interaction; inside the jet, solid lines are
+  compressions and dashed lines expansion fans.
+  (c) Grid in the shock layer at the stagnation point (every 2nd radial line),
+  with the no-field bow shock.}
 \end{figure*}
 ```
 
-The panel letters (a)/(b) are drawn in the figures. To remove one, change the
-line `\newcommand{\panellabel}{(a)}` near the top of that `.tex` to
-`\newcommand{\panellabel}{}`.
+Grid lines are the real lines of `sa_mi_baseline.su2`. Where two lines would
+be closer than about 0.85 mm (a) or 0.55 mm (c) on paper, lines are skipped,
+so the wall clustering shows as grading rather than a solid band. The full
+spacing is in the notes below.
 
 ### Compiling on Overleaf
 
@@ -54,7 +51,7 @@ Units are mm, with the origin at the cylinder centre.
   relations (γ = 1.4) give θ = 12.49° and M₂ = 5.252.
 * Supersonic jet (`jet_geometry.py`): the M₂ flow crosses the transmitted
   shock (−26.1°), so the jet leaves at −15.1° with M ≈ 2.4 and is 4.5 mm wide.
-* Grid (`fig_mesh`): the mesh is an exact polar O-grid, so it is drawn with
+* Grid: the mesh is an exact polar O-grid, so it is drawn with
   arcs and straight rays at the node positions in `data/mesh_r_i.txt` and
   `data/mesh_phi_j.txt`. It has 294 × 520 cells and Δφ = 0.25°. Radially:
   first cell 0.12 µm, ratio 1.15 to r = 39.44 mm, uniform 0.20 mm for
@@ -68,8 +65,9 @@ shock-cell pattern. The cells are drawn steeper than the jet Mach angle
 
     cd figures
     pip install numpy scipy matplotlib
-    python3 make_figures.py
-    for f in fig_*.tex; do pdflatex $f; done
+    python3 make_figure.py
+    pdflatex fig_setup.tex
+    pdflatex fig_setup_clean.tex
 
 Case parameters and shock fits are in `fig_setup_typeiv.py`, and the jet is
 in `jet_geometry.py`. Edit those, not the numbers in the `.tex` files.
