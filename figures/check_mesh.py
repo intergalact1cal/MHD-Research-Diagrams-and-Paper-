@@ -77,6 +77,11 @@ def main(path):
     assert np.abs(centre).max() < 1e-9 and dr < 1e-9 and dp < 1e-9, "grid is not exactly polar"
     assert np.all(np.diff(r_i) > 0) and np.all(np.diff(phi_j) < 0), "levels not monotonic"
 
+    # ---- symmetry about y = 0 (same circles; rays at +phi and -phi)
+    sym = np.abs(phi_j + phi_j[::-1]).max()
+    print(f"symmetric about y = 0: max |phi_j + phi_(NJ-1-j)| = {sym:.1e} deg")
+    assert sym < 1e-9, "grid is not symmetric about y = 0"
+
     # ---- markers
     def nodes(tag):
         ids = np.unique(marks[tag])

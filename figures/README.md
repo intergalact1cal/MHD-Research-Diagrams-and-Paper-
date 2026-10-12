@@ -28,14 +28,23 @@ spacing is in the notes below.
 
 ## `fig_mesh` — computational grid (standalone)
 
-`fig_mesh.tex` / `.pdf` / `.png` show the grid of `sa_mi_baseline.su2` at
-168 × 147 mm, full text width: **(a)** the whole grid, **(b)** the near-wall
-grid at the stagnation point. The red box in (a) marks (b).
+* `fig_mesh.tex` / `.pdf` / `.png` (170 × 104 mm, landscape): **(a)** the upper
+  half of the grid, **(b)** the near-wall grid at the stagnation point. The grid
+  is exactly symmetric about y = 0 (verified), so the half shows every line.
+* `fig_mesh_full.*` (170 × 132 mm): the same, with the whole grid in (a).
 
-Suggested caption: *Computational grid (294 × 520 cells). (a) Whole domain,
-every 4th radial line shown. (b) Near-wall region at the stagnation point,
-every radial line shown. In both panels, circumferential lines closer than
-0.4 mm on the page are omitted.*
+Panel (a) shows every 4th grid line in each direction. Because the stride is
+fixed, the drawn spacing varies exactly as the grid's does:
+* fine at the wall, growing by ×1.15;
+* a constant 0.20 mm through the shock layer (r = 39.6–75.5 mm);
+* growing by ×1.05 to the inlet.
+
+Panel (b) shows every grid line. The dark band at the wall is the ~40 cells
+thinner than 20 µm (the first is 0.12 µm).
+
+Suggested caption: *Computational grid, 294 × 520 cells. (a) Upper half of
+the grid (symmetric about y = 0), every 4th line shown in each direction.
+(b) Near-wall grid at the stagnation point, every line shown.*
 
 **How it is made and checked** (no hand drawing; all from the `.su2` file):
 
@@ -47,7 +56,8 @@ every radial line shown. In both panels, circumferential lines closer than
    * every node lies on its circle r_i and ray φ_j about the cylinder
      centre, to 1e−12 mm / 4e−14°;
    * the wall, inlet and outlet markers lie on i = 0, i = 294 and
-     j = 0 / 520.
+     j = 0 / 520;
+   * the grid is symmetric about y = 0.
 
    It then writes the exact node levels (`data/mesh_r_i.txt`,
    `data/mesh_phi_j.txt`, 9 decimals).
@@ -55,7 +65,9 @@ every radial line shown. In both panels, circumferential lines closer than
    straight lines through the nodes.
 3. `overlay_check.py` redraws the same grid lines as polylines through the raw
    `.su2` node coordinates and overlays them on the compiled figure at 600 dpi.
-   Result: 100 % of the `.su2` line pixels fall on a drawn line in both panels.
+   Result, for both figures and both panels: 100 % of the `.su2` line pixels
+   fall on a drawn line, and more than 99.5 % of the drawn line pixels lie on a
+   `.su2` line (the rest are tick marks).
 
 Mesh facts confirmed by the check: R = 38.1 mm; inlet r = 150.387 mm;
 outlets at φ = ±65°; no-slip wall (`cylinder`) |φ| ≤ 45°, slip wall
@@ -106,6 +118,7 @@ shock-cell pattern. The cells are drawn steeper than the jet Mach angle
     python3 make_figure.py
     python3 make_mesh_figure.py
     pdflatex fig_mesh.tex
+    pdflatex fig_mesh_full.tex
     pdflatex fig_setup.tex
     pdflatex fig_setup_clean.tex
 

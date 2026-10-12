@@ -2,20 +2,22 @@
 measure how well they coincide.
 
     python3 make_mesh_figure.py --check WORKDIR
-    (cd WORKDIR && pdflatex fig_mesh_check.tex && pdftoppm -png -gray -r 600 -singlefile fig_mesh_check.pdf check)
-    python3 overlay_check.py . sa_mi_baseline.su2 WORKDIR     # writes WORKDIR/overlay.png
+    (cd WORKDIR && pdflatex fig_mesh_check.tex &&
+     pdftoppm -png -gray -r 600 -singlefile fig_mesh_check.pdf fig_mesh_check)
+    python3 overlay_check.py . sa_mi_baseline.su2 WORKDIR fig_mesh   # -> WORKDIR/fig_mesh_overlay.png
+    (same for fig_mesh_full)
 """
 import sys, importlib.util
 import numpy as np
 from PIL import Image, ImageDraw
 from scipy.ndimage import binary_dilation
-figdir, su2, work = sys.argv[1], sys.argv[2], sys.argv[3]
+figdir, su2, work, name = sys.argv[1], sys.argv[2], sys.argv[3], sys.argv[4]
 spec = importlib.util.spec_from_file_location("cm", f"{figdir}/check_mesh.py"); cm = importlib.util.module_from_spec(spec); spec.loader.exec_module(cm)
 quads, pts, marks = cm.read_su2(su2)
 NI = 295; P = pts.reshape(-1, NI, 2) * 1000.0          # (NJ, NI, 2) node coordinates, mm
-d = np.load(f"{work}/fig_mesh_check_lines.npz")
+d = np.load(f"{work}/{name}_check_lines.npz")
 dpi = 600; px = dpi / 25.4; border = 1.0 / 72 * dpi
-img = Image.open(f"{work}/check.png").convert("L"); A = np.array(img); Hpx, Wpx = A.shape
+img = Image.open(f"{work}/{name}_check.png").convert("L"); A = np.array(img); Hpx, Wpx = A.shape
 H = float(d["H"]); OA = d["OA"]
 def to_px(xy, origin, s, win):
     X = origin[0] + (xy[:, 0] - win[0]) * s; Y = origin[1] + (xy[:, 1] - win[2]) * s
@@ -41,4 +43,4 @@ for key, m in masks:
     print(f"panel ({key}): .su2 line pixels on a TikZ line {100*prec:.2f}%  |  TikZ line pixels on a .su2 line {100*rec:.2f}%  "
           f"({su.sum()} / {tz.sum()} px)")
 rgb = np.stack([A, A, A], -1).astype(np.uint8); rgb[R] = [220, 30, 30]
-Image.fromarray(rgb).save(f"{work}/overlay.png")
+Image.fromarray(rgb).save(f"{work}/{name}_overlay.png")
