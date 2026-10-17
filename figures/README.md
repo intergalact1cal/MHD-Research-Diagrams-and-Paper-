@@ -21,10 +21,15 @@ labels. Include it at full text width:
 \end{figure*}
 ```
 
-Grid lines are the real lines of `sa_mi_baseline.su2`. Where two lines would
-be closer than about 0.85 mm (a) or 0.55 mm (c) on paper, lines are skipped,
-so the wall clustering shows as grading rather than a solid band. The full
-spacing is in the notes below.
+Grid lines are the real lines of `sa_mi_baseline.su2` at a fixed stride, so
+the drawn spacing follows the grid exactly: (a) every 4th circle and every
+8th ray, (c) every 2nd line in each direction. `verify_setup_grid.py` parses
+the radii and angles written in the `.tex` and compares them with the `.su2`
+nodes. They agree to 5e-10 mm and 2e-14°.
+
+In (a) and (c), the shocks are the no-field solution, drawn in violet and
+labelled "(reference)". They are there to show where the type IV interaction
+sits, and are not part of the geometry.
 
 ## `fig_mesh` — computational grid (standalone)
 

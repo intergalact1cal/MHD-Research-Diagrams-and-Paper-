@@ -15,7 +15,7 @@
 %  Grid sa_mi_baseline.su2: 294 x 520 cells, polar O-grid, dphi = 0.25 deg,
 %  first cell 0.12 um, ratio 1.15 to r = 39.44 mm, uniform 0.20 mm for
 %  39.64 <= r <= 75.53 mm, ratio 1.05 to the inlet.  Grid lines shown: (a) every
-%  8th ray, (c) every 2nd ray; circles thinned so drawn lines stay apart.
+%  4th circle and 8th ray, (c) every 2nd line; exact node levels.
 %  Jet: transmitted shock -26.2 deg -> jet direction -15.2 deg, M_jet = 2.40, width 4.5 mm;
 %  jet arch, jet bow shock stand-off and shock cells are schematic.
 % ==========================================================================
@@ -33,13 +33,14 @@
 \definecolor{shockgrey}{HTML}{3C3C3C}
 \definecolor{dimgrey}{HTML}{7A7A7A}
 \definecolor{leadergrey}{HTML}{9A9A9A}
-\definecolor{gridgrey}{HTML}{B4B4B4}
+\definecolor{gridgrey}{HTML}{BDBDBD}
 \definecolor{bodygrey}{HTML}{E2E2E2}
 \definecolor{freeblue}{HTML}{1A5FA8}
 \definecolor{postgreen}{HTML}{0E8A62}
 \definecolor{slipochre}{HTML}{B06A10}
 \definecolor{jetfill}{HTML}{FBEBD3}
 \definecolor{accent}{HTML}{C0392B}
+\definecolor{shockref}{HTML}{7B5AA6}
 
 % ---- styles
 \tikzset{
@@ -53,7 +54,7 @@
   outlet/.style={draw=dimgrey, line width=1.1pt, dash pattern=on 3pt off 2pt, line cap=butt},
   noslip/.style={draw=ink, line width=1.7pt},
   slip/.style={draw=slipochre, line width=1.7pt, dash pattern=on 2pt off 1.1pt, line cap=butt},
-  shockA/.style={draw=shockgrey, line width=0.8pt},
+  shockA/.style={draw=shockref, line width=0.75pt, draw opacity=0.9},
   shockB/.style={draw=ink, line width=1.1pt},
   shear/.style={draw=ink, line width=0.7pt, dash pattern=on 2.4pt off 1.4pt, line cap=butt},
   cellshock/.style={draw=ink, line width=0.45pt},
@@ -80,7 +81,8 @@
 
 % ======================================================================
 %  (a) computational domain, boundary conditions and grid
-%      grid: every 8th ray (2 deg); circles thinned to >= 0.85 mm on paper
+%      grid: every 4th circle and every 8th ray (2 deg), at the exact node levels
+%      shocks: no-field solution, drawn for reference (violet), not geometry
 % ======================================================================
 \begin{scope}[shift={(58.31,53.512)}, x=0.36905mm, y=0.36905mm]
   \begin{scope}
@@ -90,113 +92,147 @@
       (115:38.1) arc[start angle=115, end angle=-115, radius=38.1];
   \end{scope}
 
-  % grid (41 circles, 66 rays shown)
-    \draw[gridA] (115:40.44228) arc[start angle=115, end angle=245, radius=40.44228];
-    \draw[gridA] (115:42.84859) arc[start angle=115, end angle=245, radius=42.84859];
-    \draw[gridA] (115:45.25491) arc[start angle=115, end angle=245, radius=45.25491];
-    \draw[gridA] (115:47.66123) arc[start angle=115, end angle=245, radius=47.66123];
-    \draw[gridA] (115:50.06754) arc[start angle=115, end angle=245, radius=50.06754];
-    \draw[gridA] (115:52.47386) arc[start angle=115, end angle=245, radius=52.47386];
-    \draw[gridA] (115:54.88017) arc[start angle=115, end angle=245, radius=54.88017];
-    \draw[gridA] (115:57.28649) arc[start angle=115, end angle=245, radius=57.28649];
-    \draw[gridA] (115:59.69281) arc[start angle=115, end angle=245, radius=59.69281];
-    \draw[gridA] (115:62.09912) arc[start angle=115, end angle=245, radius=62.09912];
-    \draw[gridA] (115:64.50544) arc[start angle=115, end angle=245, radius=64.50544];
-    \draw[gridA] (115:66.91175) arc[start angle=115, end angle=245, radius=66.91175];
-    \draw[gridA] (115:69.31807) arc[start angle=115, end angle=245, radius=69.31807];
-    \draw[gridA] (115:71.72438) arc[start angle=115, end angle=245, radius=71.72438];
-    \draw[gridA] (115:74.1307) arc[start angle=115, end angle=245, radius=74.1307];
-    \draw[gridA] (115:76.44189) arc[start angle=115, end angle=245, radius=76.44189];
-    \draw[gridA] (115:78.88578) arc[start angle=115, end angle=245, radius=78.88578];
-    \draw[gridA] (115:81.45773) arc[start angle=115, end angle=245, radius=81.45773];
-    \draw[gridA] (115:84.25768) arc[start angle=115, end angle=245, radius=84.25768];
-    \draw[gridA] (115:87.04511) arc[start angle=115, end angle=245, radius=87.04511];
-    \draw[gridA] (115:89.52326) arc[start angle=115, end angle=245, radius=89.52326];
-    \draw[gridA] (115:92.39202) arc[start angle=115, end angle=245, radius=92.39202];
-    \draw[gridA] (115:95.71297) arc[start angle=115, end angle=245, radius=95.71297];
-    \draw[gridA] (115:98.21291) arc[start angle=115, end angle=245, radius=98.21291];
-    \draw[gridA] (115:100.96909) arc[start angle=115, end angle=245, radius=100.96909];
-    \draw[gridA] (115:104.00779) arc[start angle=115, end angle=245, radius=104.00779];
-    \draw[gridA] (115:107.35794) arc[start angle=115, end angle=245, radius=107.35794];
-    \draw[gridA] (115:111.05149) arc[start angle=115, end angle=245, radius=111.05149];
-    \draw[gridA] (115:115.12363) arc[start angle=115, end angle=245, radius=115.12363];
-    \draw[gridA] (115:119.61316) arc[start angle=115, end angle=245, radius=119.61316];
-    \draw[gridA] (115:122.02765) arc[start angle=115, end angle=245, radius=122.02765];
-    \draw[gridA] (115:124.56286) arc[start angle=115, end angle=245, radius=124.56286];
-    \draw[gridA] (115:127.22484) arc[start angle=115, end angle=245, radius=127.22484];
-    \draw[gridA] (115:130.01991) arc[start angle=115, end angle=245, radius=130.01991];
-    \draw[gridA] (115:132.95474) arc[start angle=115, end angle=245, radius=132.95474];
-    \draw[gridA] (115:136.03631) arc[start angle=115, end angle=245, radius=136.03631];
-    \draw[gridA] (115:139.27196) arc[start angle=115, end angle=245, radius=139.27196];
-    \draw[gridA] (115:142.6694) arc[start angle=115, end angle=245, radius=142.6694];
-    \draw[gridA] (115:146.2367) arc[start angle=115, end angle=245, radius=146.2367];
-    \draw[gridA] (115:150.38723) arc[start angle=115, end angle=245, radius=150.38723];
-    \draw[gridA] (245:38.1) -- (245:150.3872);
-    \draw[gridA] (243:38.1) -- (243:150.3872);
-    \draw[gridA] (241:38.1) -- (241:150.3872);
-    \draw[gridA] (239:38.1) -- (239:150.3872);
-    \draw[gridA] (237:38.1) -- (237:150.3872);
-    \draw[gridA] (235:38.1) -- (235:150.3872);
-    \draw[gridA] (233:38.1) -- (233:150.3872);
-    \draw[gridA] (231:38.1) -- (231:150.3872);
-    \draw[gridA] (229:38.1) -- (229:150.3872);
-    \draw[gridA] (227:38.1) -- (227:150.3872);
-    \draw[gridA] (225:38.1) -- (225:150.3872);
-    \draw[gridA] (223:38.1) -- (223:150.3872);
-    \draw[gridA] (221:38.1) -- (221:150.3872);
-    \draw[gridA] (219:38.1) -- (219:150.3872);
-    \draw[gridA] (217:38.1) -- (217:150.3872);
-    \draw[gridA] (215:38.1) -- (215:150.3872);
-    \draw[gridA] (213:38.1) -- (213:150.3872);
-    \draw[gridA] (211:38.1) -- (211:150.3872);
-    \draw[gridA] (209:38.1) -- (209:150.3872);
-    \draw[gridA] (207:38.1) -- (207:150.3872);
-    \draw[gridA] (205:38.1) -- (205:150.3872);
-    \draw[gridA] (203:38.1) -- (203:150.3872);
-    \draw[gridA] (201:38.1) -- (201:150.3872);
-    \draw[gridA] (199:38.1) -- (199:150.3872);
-    \draw[gridA] (197:38.1) -- (197:150.3872);
-    \draw[gridA] (195:38.1) -- (195:150.3872);
-    \draw[gridA] (193:38.1) -- (193:150.3872);
-    \draw[gridA] (191:38.1) -- (191:150.3872);
-    \draw[gridA] (189:38.1) -- (189:150.3872);
-    \draw[gridA] (187:38.1) -- (187:150.3872);
-    \draw[gridA] (185:38.1) -- (185:150.3872);
-    \draw[gridA] (183:38.1) -- (183:150.3872);
-    \draw[gridA] (181:38.1) -- (181:150.3872);
-    \draw[gridA] (179:38.1) -- (179:150.3872);
-    \draw[gridA] (177:38.1) -- (177:150.3872);
-    \draw[gridA] (175:38.1) -- (175:150.3872);
-    \draw[gridA] (173:38.1) -- (173:150.3872);
-    \draw[gridA] (171:38.1) -- (171:150.3872);
-    \draw[gridA] (169:38.1) -- (169:150.3872);
-    \draw[gridA] (167:38.1) -- (167:150.3872);
-    \draw[gridA] (165:38.1) -- (165:150.3872);
-    \draw[gridA] (163:38.1) -- (163:150.3872);
-    \draw[gridA] (161:38.1) -- (161:150.3872);
-    \draw[gridA] (159:38.1) -- (159:150.3872);
-    \draw[gridA] (157:38.1) -- (157:150.3872);
-    \draw[gridA] (155:38.1) -- (155:150.3872);
-    \draw[gridA] (153:38.1) -- (153:150.3872);
-    \draw[gridA] (151:38.1) -- (151:150.3872);
-    \draw[gridA] (149:38.1) -- (149:150.3872);
-    \draw[gridA] (147:38.1) -- (147:150.3872);
-    \draw[gridA] (145:38.1) -- (145:150.3872);
-    \draw[gridA] (143:38.1) -- (143:150.3872);
-    \draw[gridA] (141:38.1) -- (141:150.3872);
-    \draw[gridA] (139:38.1) -- (139:150.3872);
-    \draw[gridA] (137:38.1) -- (137:150.3872);
-    \draw[gridA] (135:38.1) -- (135:150.3872);
-    \draw[gridA] (133:38.1) -- (133:150.3872);
-    \draw[gridA] (131:38.1) -- (131:150.3872);
-    \draw[gridA] (129:38.1) -- (129:150.3872);
-    \draw[gridA] (127:38.1) -- (127:150.3872);
-    \draw[gridA] (125:38.1) -- (125:150.3872);
-    \draw[gridA] (123:38.1) -- (123:150.3872);
-    \draw[gridA] (121:38.1) -- (121:150.3872);
-    \draw[gridA] (119:38.1) -- (119:150.3872);
-    \draw[gridA] (117:38.1) -- (117:150.3872);
+  % grid (75 circles, 66 rays shown)
+    \draw[gridA] (115:38.100609192) arc[start angle=115, end angle=245, radius=38.100609192];
+    \draw[gridA] (115:38.101674672) arc[start angle=115, end angle=245, radius=38.101674672];
+    \draw[gridA] (115:38.103538203) arc[start angle=115, end angle=245, radius=38.103538203];
+    \draw[gridA] (115:38.106797532) arc[start angle=115, end angle=245, radius=38.106797532];
+    \draw[gridA] (115:38.112498117) arc[start angle=115, end angle=245, radius=38.112498117];
+    \draw[gridA] (115:38.122468477) arc[start angle=115, end angle=245, radius=38.122468477];
+    \draw[gridA] (115:38.139906698) arc[start angle=115, end angle=245, radius=38.139906698];
+    \draw[gridA] (115:38.170406256) arc[start angle=115, end angle=245, radius=38.170406256];
+    \draw[gridA] (115:38.223750173) arc[start angle=115, end angle=245, radius=38.223750173];
+    \draw[gridA] (115:38.317049018) arc[start angle=115, end angle=245, radius=38.317049018];
+    \draw[gridA] (115:38.48022928) arc[start angle=115, end angle=245, radius=38.48022928];
+    \draw[gridA] (115:38.765632579) arc[start angle=115, end angle=245, radius=38.765632579];
+    \draw[gridA] (115:39.264804733) arc[start angle=115, end angle=245, radius=39.264804733];
+    \draw[gridA] (115:40.04122639) arc[start angle=115, end angle=245, radius=40.04122639];
+    \draw[gridA] (115:40.843331653) arc[start angle=115, end angle=245, radius=40.843331653];
+    \draw[gridA] (115:41.645436916) arc[start angle=115, end angle=245, radius=41.645436916];
+    \draw[gridA] (115:42.44754218) arc[start angle=115, end angle=245, radius=42.44754218];
+    \draw[gridA] (115:43.249647443) arc[start angle=115, end angle=245, radius=43.249647443];
+    \draw[gridA] (115:44.051752706) arc[start angle=115, end angle=245, radius=44.051752706];
+    \draw[gridA] (115:44.853857969) arc[start angle=115, end angle=245, radius=44.853857969];
+    \draw[gridA] (115:45.655963232) arc[start angle=115, end angle=245, radius=45.655963232];
+    \draw[gridA] (115:46.458068495) arc[start angle=115, end angle=245, radius=46.458068495];
+    \draw[gridA] (115:47.260173758) arc[start angle=115, end angle=245, radius=47.260173758];
+    \draw[gridA] (115:48.062279022) arc[start angle=115, end angle=245, radius=48.062279022];
+    \draw[gridA] (115:48.864384285) arc[start angle=115, end angle=245, radius=48.864384285];
+    \draw[gridA] (115:49.666489548) arc[start angle=115, end angle=245, radius=49.666489548];
+    \draw[gridA] (115:50.468594811) arc[start angle=115, end angle=245, radius=50.468594811];
+    \draw[gridA] (115:51.270700074) arc[start angle=115, end angle=245, radius=51.270700074];
+    \draw[gridA] (115:52.072805337) arc[start angle=115, end angle=245, radius=52.072805337];
+    \draw[gridA] (115:52.874910601) arc[start angle=115, end angle=245, radius=52.874910601];
+    \draw[gridA] (115:53.677015864) arc[start angle=115, end angle=245, radius=53.677015864];
+    \draw[gridA] (115:54.479121127) arc[start angle=115, end angle=245, radius=54.479121127];
+    \draw[gridA] (115:55.28122639) arc[start angle=115, end angle=245, radius=55.28122639];
+    \draw[gridA] (115:56.083331653) arc[start angle=115, end angle=245, radius=56.083331653];
+    \draw[gridA] (115:56.885436916) arc[start angle=115, end angle=245, radius=56.885436916];
+    \draw[gridA] (115:57.68754218) arc[start angle=115, end angle=245, radius=57.68754218];
+    \draw[gridA] (115:58.489647443) arc[start angle=115, end angle=245, radius=58.489647443];
+    \draw[gridA] (115:59.291752706) arc[start angle=115, end angle=245, radius=59.291752706];
+    \draw[gridA] (115:60.093857969) arc[start angle=115, end angle=245, radius=60.093857969];
+    \draw[gridA] (115:60.895963232) arc[start angle=115, end angle=245, radius=60.895963232];
+    \draw[gridA] (115:61.698068495) arc[start angle=115, end angle=245, radius=61.698068495];
+    \draw[gridA] (115:62.500173758) arc[start angle=115, end angle=245, radius=62.500173758];
+    \draw[gridA] (115:63.302279022) arc[start angle=115, end angle=245, radius=63.302279022];
+    \draw[gridA] (115:64.104384285) arc[start angle=115, end angle=245, radius=64.104384285];
+    \draw[gridA] (115:64.906489548) arc[start angle=115, end angle=245, radius=64.906489548];
+    \draw[gridA] (115:65.708594811) arc[start angle=115, end angle=245, radius=65.708594811];
+    \draw[gridA] (115:66.510700074) arc[start angle=115, end angle=245, radius=66.510700074];
+    \draw[gridA] (115:67.312805337) arc[start angle=115, end angle=245, radius=67.312805337];
+    \draw[gridA] (115:68.114910601) arc[start angle=115, end angle=245, radius=68.114910601];
+    \draw[gridA] (115:68.917015864) arc[start angle=115, end angle=245, radius=68.917015864];
+    \draw[gridA] (115:69.719121127) arc[start angle=115, end angle=245, radius=69.719121127];
+    \draw[gridA] (115:70.52122639) arc[start angle=115, end angle=245, radius=70.52122639];
+    \draw[gridA] (115:71.323331653) arc[start angle=115, end angle=245, radius=71.323331653];
+    \draw[gridA] (115:72.125436916) arc[start angle=115, end angle=245, radius=72.125436916];
+    \draw[gridA] (115:72.92754218) arc[start angle=115, end angle=245, radius=72.92754218];
+    \draw[gridA] (115:73.729647443) arc[start angle=115, end angle=245, radius=73.729647443];
+    \draw[gridA] (115:74.531752706) arc[start angle=115, end angle=245, radius=74.531752706];
+    \draw[gridA] (115:75.333857969) arc[start angle=115, end angle=245, radius=75.333857969];
+    \draw[gridA] (115:76.198151456) arc[start angle=115, end angle=245, radius=76.198151456];
+    \draw[gridA] (115:77.248705591) arc[start angle=115, end angle=245, radius=77.248705591];
+    \draw[gridA] (115:78.525660708) arc[start angle=115, end angle=245, radius=78.525660708];
+    \draw[gridA] (115:80.077807634) arc[start angle=115, end angle=245, radius=80.077807634];
+    \draw[gridA] (115:81.964451923) arc[start angle=115, end angle=245, radius=81.964451923];
+    \draw[gridA] (115:84.257679849) arc[start angle=115, end angle=245, radius=84.257679849];
+    \draw[gridA] (115:87.045112724) arc[start angle=115, end angle=245, radius=87.045112724];
+    \draw[gridA] (115:90.433254806) arc[start angle=115, end angle=245, radius=90.433254806];
+    \draw[gridA] (115:94.551562683) arc[start angle=115, end angle=245, radius=94.551562683];
+    \draw[gridA] (115:99.557391646) arc[start angle=115, end angle=245, radius=99.557391646];
+    \draw[gridA] (115:105.642008037) arc[start angle=115, end angle=245, radius=105.642008037];
+    \draw[gridA] (115:113.03789729) arc[start angle=115, end angle=245, radius=113.03789729];
+    \draw[gridA] (115:122.027646901) arc[start angle=115, end angle=245, radius=122.027646901];
+    \draw[gridA] (115:132.954743738) arc[start angle=115, end angle=245, radius=132.954743738];
+    \draw[gridA] (115:146.236698239) arc[start angle=115, end angle=245, radius=146.236698239];
+    \draw[gridA] (115:150.387226276) arc[start angle=115, end angle=245, radius=150.387226276];
     \draw[gridA] (115:38.1) -- (115:150.3872);
+    \draw[gridA] (117:38.1) -- (117:150.3872);
+    \draw[gridA] (119:38.1) -- (119:150.3872);
+    \draw[gridA] (121:38.1) -- (121:150.3872);
+    \draw[gridA] (123:38.1) -- (123:150.3872);
+    \draw[gridA] (125:38.1) -- (125:150.3872);
+    \draw[gridA] (127:38.1) -- (127:150.3872);
+    \draw[gridA] (129:38.1) -- (129:150.3872);
+    \draw[gridA] (131:38.1) -- (131:150.3872);
+    \draw[gridA] (133:38.1) -- (133:150.3872);
+    \draw[gridA] (135:38.1) -- (135:150.3872);
+    \draw[gridA] (137:38.1) -- (137:150.3872);
+    \draw[gridA] (139:38.1) -- (139:150.3872);
+    \draw[gridA] (141:38.1) -- (141:150.3872);
+    \draw[gridA] (143:38.1) -- (143:150.3872);
+    \draw[gridA] (145:38.1) -- (145:150.3872);
+    \draw[gridA] (147:38.1) -- (147:150.3872);
+    \draw[gridA] (149:38.1) -- (149:150.3872);
+    \draw[gridA] (151:38.1) -- (151:150.3872);
+    \draw[gridA] (153:38.1) -- (153:150.3872);
+    \draw[gridA] (155:38.1) -- (155:150.3872);
+    \draw[gridA] (157:38.1) -- (157:150.3872);
+    \draw[gridA] (159:38.1) -- (159:150.3872);
+    \draw[gridA] (161:38.1) -- (161:150.3872);
+    \draw[gridA] (163:38.1) -- (163:150.3872);
+    \draw[gridA] (165:38.1) -- (165:150.3872);
+    \draw[gridA] (167:38.1) -- (167:150.3872);
+    \draw[gridA] (169:38.1) -- (169:150.3872);
+    \draw[gridA] (171:38.1) -- (171:150.3872);
+    \draw[gridA] (173:38.1) -- (173:150.3872);
+    \draw[gridA] (175:38.1) -- (175:150.3872);
+    \draw[gridA] (177:38.1) -- (177:150.3872);
+    \draw[gridA] (179:38.1) -- (179:150.3872);
+    \draw[gridA] (181:38.1) -- (181:150.3872);
+    \draw[gridA] (183:38.1) -- (183:150.3872);
+    \draw[gridA] (185:38.1) -- (185:150.3872);
+    \draw[gridA] (187:38.1) -- (187:150.3872);
+    \draw[gridA] (189:38.1) -- (189:150.3872);
+    \draw[gridA] (191:38.1) -- (191:150.3872);
+    \draw[gridA] (193:38.1) -- (193:150.3872);
+    \draw[gridA] (195:38.1) -- (195:150.3872);
+    \draw[gridA] (197:38.1) -- (197:150.3872);
+    \draw[gridA] (199:38.1) -- (199:150.3872);
+    \draw[gridA] (201:38.1) -- (201:150.3872);
+    \draw[gridA] (203:38.1) -- (203:150.3872);
+    \draw[gridA] (205:38.1) -- (205:150.3872);
+    \draw[gridA] (207:38.1) -- (207:150.3872);
+    \draw[gridA] (209:38.1) -- (209:150.3872);
+    \draw[gridA] (211:38.1) -- (211:150.3872);
+    \draw[gridA] (213:38.1) -- (213:150.3872);
+    \draw[gridA] (215:38.1) -- (215:150.3872);
+    \draw[gridA] (217:38.1) -- (217:150.3872);
+    \draw[gridA] (219:38.1) -- (219:150.3872);
+    \draw[gridA] (221:38.1) -- (221:150.3872);
+    \draw[gridA] (223:38.1) -- (223:150.3872);
+    \draw[gridA] (225:38.1) -- (225:150.3872);
+    \draw[gridA] (227:38.1) -- (227:150.3872);
+    \draw[gridA] (229:38.1) -- (229:150.3872);
+    \draw[gridA] (231:38.1) -- (231:150.3872);
+    \draw[gridA] (233:38.1) -- (233:150.3872);
+    \draw[gridA] (235:38.1) -- (235:150.3872);
+    \draw[gridA] (237:38.1) -- (237:150.3872);
+    \draw[gridA] (239:38.1) -- (239:150.3872);
+    \draw[gridA] (241:38.1) -- (241:150.3872);
+    \draw[gridA] (243:38.1) -- (243:150.3872);
+    \draw[gridA] (245:38.1) -- (245:150.3872);
 
   % shock system (no-field solution)
   \begin{scope}
@@ -263,7 +299,7 @@
   \draw[window] (-86,-32) rectangle (-30,6.83);
   \node[sml, anchor=south west, inner sep=0.8pt, halo] at (-86,6.83) {(b)};
   \draw[windowC] (-80,-6.535) rectangle (-36,6.535);
-  \node[sml, text=accent, anchor=north west, inner sep=0.8pt, halo] at (-86,-7.035) {(c)};
+  \node[sml, text=accent, anchor=south east, inner sep=0.8pt, halo] at (-36,7.125) {(c)};
 
   % inlet split and shock angle
   \draw[ink, line width=0.45pt] (-106.96,-31.91) arc[start angle=0, end angle=18.1, radius=40];
@@ -285,7 +321,7 @@
   \draw[leader] (sw.west) -- (-20.75,31.95);
   \node[sml, anchor=center] (ns) at (-11.5,12) {no-slip wall\\$T_w$ = 294\,K};
   \draw[leader] (ns.west) -- (-37.27,7.92);
-  \node[lbl, halo, anchor=west] (bs) at (-104,66) {bow shock};
+  \node[lbl, halo, text=shockref, anchor=west, align=left] (bs) at (-108,66) {bow shock\\[-0.4ex]{\footnotesize (reference)}};
   \draw[leader] (bs.east) -- (-53.41,64);
 
   % dimensions
@@ -490,174 +526,185 @@
 
 % ======================================================================
 %  (c) grid in the shock layer at the stagnation point
-%      every 2nd ray (0.5 deg); circles thinned to >= 0.55 mm on paper
+%      every 2nd grid line in each direction (exact node levels)
 % ======================================================================
 \begin{scope}[shift={(252.636,15)}, x=2.29545mm, y=2.29545mm]
   \begin{scope}
     \clip (-80,-6.5347) rectangle (-36,6.5347);
     \fill[bodygrey] (0,0) circle[radius=38.1];
-    % grid (118 circles, 41 rays shown)
-    \draw[gridC] (170:38.34973) arc[start angle=170, end angle=190, radius=38.34973];
-    \draw[gridC] (170:38.60312) arc[start angle=170, end angle=190, radius=38.60312];
-    \draw[gridC] (170:38.8656) arc[start angle=170, end angle=190, radius=38.8656];
-    \draw[gridC] (170:39.11277) arc[start angle=170, end angle=190, radius=39.11277];
-    \draw[gridC] (170:39.43965) arc[start angle=170, end angle=190, radius=39.43965];
-    \draw[gridC] (170:39.8407) arc[start angle=170, end angle=190, radius=39.8407];
-    \draw[gridC] (170:40.24175) arc[start angle=170, end angle=190, radius=40.24175];
-    \draw[gridC] (170:40.64281) arc[start angle=170, end angle=190, radius=40.64281];
-    \draw[gridC] (170:41.04386) arc[start angle=170, end angle=190, radius=41.04386];
-    \draw[gridC] (170:41.44491) arc[start angle=170, end angle=190, radius=41.44491];
-    \draw[gridC] (170:41.84596) arc[start angle=170, end angle=190, radius=41.84596];
-    \draw[gridC] (170:42.24702) arc[start angle=170, end angle=190, radius=42.24702];
-    \draw[gridC] (170:42.64807) arc[start angle=170, end angle=190, radius=42.64807];
-    \draw[gridC] (170:43.04912) arc[start angle=170, end angle=190, radius=43.04912];
-    \draw[gridC] (170:43.45017) arc[start angle=170, end angle=190, radius=43.45017];
-    \draw[gridC] (170:43.85123) arc[start angle=170, end angle=190, radius=43.85123];
-    \draw[gridC] (170:44.25228) arc[start angle=170, end angle=190, radius=44.25228];
-    \draw[gridC] (170:44.65333) arc[start angle=170, end angle=190, radius=44.65333];
-    \draw[gridC] (170:45.05438) arc[start angle=170, end angle=190, radius=45.05438];
-    \draw[gridC] (170:45.45544) arc[start angle=170, end angle=190, radius=45.45544];
-    \draw[gridC] (170:45.85649) arc[start angle=170, end angle=190, radius=45.85649];
-    \draw[gridC] (170:46.25754) arc[start angle=170, end angle=190, radius=46.25754];
-    \draw[gridC] (170:46.65859) arc[start angle=170, end angle=190, radius=46.65859];
-    \draw[gridC] (170:47.05965) arc[start angle=170, end angle=190, radius=47.05965];
-    \draw[gridC] (170:47.4607) arc[start angle=170, end angle=190, radius=47.4607];
-    \draw[gridC] (170:47.86175) arc[start angle=170, end angle=190, radius=47.86175];
-    \draw[gridC] (170:48.26281) arc[start angle=170, end angle=190, radius=48.26281];
-    \draw[gridC] (170:48.66386) arc[start angle=170, end angle=190, radius=48.66386];
-    \draw[gridC] (170:49.06491) arc[start angle=170, end angle=190, radius=49.06491];
-    \draw[gridC] (170:49.46596) arc[start angle=170, end angle=190, radius=49.46596];
-    \draw[gridC] (170:49.86702) arc[start angle=170, end angle=190, radius=49.86702];
-    \draw[gridC] (170:50.26807) arc[start angle=170, end angle=190, radius=50.26807];
-    \draw[gridC] (170:50.66912) arc[start angle=170, end angle=190, radius=50.66912];
-    \draw[gridC] (170:51.07017) arc[start angle=170, end angle=190, radius=51.07017];
-    \draw[gridC] (170:51.47123) arc[start angle=170, end angle=190, radius=51.47123];
-    \draw[gridC] (170:51.87228) arc[start angle=170, end angle=190, radius=51.87228];
-    \draw[gridC] (170:52.27333) arc[start angle=170, end angle=190, radius=52.27333];
-    \draw[gridC] (170:52.67438) arc[start angle=170, end angle=190, radius=52.67438];
-    \draw[gridC] (170:53.07544) arc[start angle=170, end angle=190, radius=53.07544];
-    \draw[gridC] (170:53.47649) arc[start angle=170, end angle=190, radius=53.47649];
-    \draw[gridC] (170:53.87754) arc[start angle=170, end angle=190, radius=53.87754];
-    \draw[gridC] (170:54.27859) arc[start angle=170, end angle=190, radius=54.27859];
-    \draw[gridC] (170:54.67965) arc[start angle=170, end angle=190, radius=54.67965];
-    \draw[gridC] (170:55.0807) arc[start angle=170, end angle=190, radius=55.0807];
-    \draw[gridC] (170:55.48175) arc[start angle=170, end angle=190, radius=55.48175];
-    \draw[gridC] (170:55.88281) arc[start angle=170, end angle=190, radius=55.88281];
-    \draw[gridC] (170:56.28386) arc[start angle=170, end angle=190, radius=56.28386];
-    \draw[gridC] (170:56.68491) arc[start angle=170, end angle=190, radius=56.68491];
-    \draw[gridC] (170:57.08596) arc[start angle=170, end angle=190, radius=57.08596];
-    \draw[gridC] (170:57.48702) arc[start angle=170, end angle=190, radius=57.48702];
-    \draw[gridC] (170:57.88807) arc[start angle=170, end angle=190, radius=57.88807];
-    \draw[gridC] (170:58.28912) arc[start angle=170, end angle=190, radius=58.28912];
-    \draw[gridC] (170:58.69017) arc[start angle=170, end angle=190, radius=58.69017];
-    \draw[gridC] (170:59.09123) arc[start angle=170, end angle=190, radius=59.09123];
-    \draw[gridC] (170:59.49228) arc[start angle=170, end angle=190, radius=59.49228];
-    \draw[gridC] (170:59.89333) arc[start angle=170, end angle=190, radius=59.89333];
-    \draw[gridC] (170:60.29438) arc[start angle=170, end angle=190, radius=60.29438];
-    \draw[gridC] (170:60.69544) arc[start angle=170, end angle=190, radius=60.69544];
-    \draw[gridC] (170:61.09649) arc[start angle=170, end angle=190, radius=61.09649];
-    \draw[gridC] (170:61.49754) arc[start angle=170, end angle=190, radius=61.49754];
-    \draw[gridC] (170:61.89859) arc[start angle=170, end angle=190, radius=61.89859];
-    \draw[gridC] (170:62.29965) arc[start angle=170, end angle=190, radius=62.29965];
-    \draw[gridC] (170:62.7007) arc[start angle=170, end angle=190, radius=62.7007];
-    \draw[gridC] (170:63.10175) arc[start angle=170, end angle=190, radius=63.10175];
-    \draw[gridC] (170:63.50281) arc[start angle=170, end angle=190, radius=63.50281];
-    \draw[gridC] (170:63.90386) arc[start angle=170, end angle=190, radius=63.90386];
-    \draw[gridC] (170:64.30491) arc[start angle=170, end angle=190, radius=64.30491];
-    \draw[gridC] (170:64.70596) arc[start angle=170, end angle=190, radius=64.70596];
-    \draw[gridC] (170:65.10702) arc[start angle=170, end angle=190, radius=65.10702];
-    \draw[gridC] (170:65.50807) arc[start angle=170, end angle=190, radius=65.50807];
-    \draw[gridC] (170:65.90912) arc[start angle=170, end angle=190, radius=65.90912];
-    \draw[gridC] (170:66.31017) arc[start angle=170, end angle=190, radius=66.31017];
-    \draw[gridC] (170:66.71123) arc[start angle=170, end angle=190, radius=66.71123];
-    \draw[gridC] (170:67.11228) arc[start angle=170, end angle=190, radius=67.11228];
-    \draw[gridC] (170:67.51333) arc[start angle=170, end angle=190, radius=67.51333];
-    \draw[gridC] (170:67.91438) arc[start angle=170, end angle=190, radius=67.91438];
-    \draw[gridC] (170:68.31544) arc[start angle=170, end angle=190, radius=68.31544];
-    \draw[gridC] (170:68.71649) arc[start angle=170, end angle=190, radius=68.71649];
-    \draw[gridC] (170:69.11754) arc[start angle=170, end angle=190, radius=69.11754];
-    \draw[gridC] (170:69.51859) arc[start angle=170, end angle=190, radius=69.51859];
-    \draw[gridC] (170:69.91965) arc[start angle=170, end angle=190, radius=69.91965];
-    \draw[gridC] (170:70.3207) arc[start angle=170, end angle=190, radius=70.3207];
-    \draw[gridC] (170:70.72175) arc[start angle=170, end angle=190, radius=70.72175];
-    \draw[gridC] (170:71.12281) arc[start angle=170, end angle=190, radius=71.12281];
-    \draw[gridC] (170:71.52386) arc[start angle=170, end angle=190, radius=71.52386];
-    \draw[gridC] (170:71.92491) arc[start angle=170, end angle=190, radius=71.92491];
-    \draw[gridC] (170:72.32596) arc[start angle=170, end angle=190, radius=72.32596];
-    \draw[gridC] (170:72.72702) arc[start angle=170, end angle=190, radius=72.72702];
-    \draw[gridC] (170:73.12807) arc[start angle=170, end angle=190, radius=73.12807];
-    \draw[gridC] (170:73.52912) arc[start angle=170, end angle=190, radius=73.52912];
-    \draw[gridC] (170:73.93017) arc[start angle=170, end angle=190, radius=73.93017];
-    \draw[gridC] (170:74.33123) arc[start angle=170, end angle=190, radius=74.33123];
-    \draw[gridC] (170:74.73228) arc[start angle=170, end angle=190, radius=74.73228];
-    \draw[gridC] (170:75.13333) arc[start angle=170, end angle=190, radius=75.13333];
-    \draw[gridC] (170:75.53438) arc[start angle=170, end angle=190, radius=75.53438];
-    \draw[gridC] (170:75.96602) arc[start angle=170, end angle=190, radius=75.96602];
-    \draw[gridC] (170:76.44189) arc[start angle=170, end angle=190, radius=76.44189];
-    \draw[gridC] (170:76.69782) arc[start angle=170, end angle=190, radius=76.69782];
-    \draw[gridC] (170:76.96654) arc[start angle=170, end angle=190, radius=76.96654];
-    \draw[gridC] (170:77.24871) arc[start angle=170, end angle=190, radius=77.24871];
-    \draw[gridC] (170:77.54497) arc[start angle=170, end angle=190, radius=77.54497];
-    \draw[gridC] (170:77.85606) arc[start angle=170, end angle=190, radius=77.85606];
-    \draw[gridC] (170:78.18269) arc[start angle=170, end angle=190, radius=78.18269];
-    \draw[gridC] (170:78.52566) arc[start angle=170, end angle=190, radius=78.52566];
-    \draw[gridC] (170:78.88578) arc[start angle=170, end angle=190, radius=78.88578];
-    \draw[gridC] (170:79.2639) arc[start angle=170, end angle=190, radius=79.2639];
-    \draw[gridC] (170:79.66093) arc[start angle=170, end angle=190, radius=79.66093];
-    \draw[gridC] (170:80.07781) arc[start angle=170, end angle=190, radius=80.07781];
-    \draw[gridC] (170:80.51553) arc[start angle=170, end angle=190, radius=80.51553];
-    \draw[gridC] (170:80.97514) arc[start angle=170, end angle=190, radius=80.97514];
-    \draw[gridC] (170:81.45773) arc[start angle=170, end angle=190, radius=81.45773];
-    \draw[gridC] (170:81.96445) arc[start angle=170, end angle=190, radius=81.96445];
-    \draw[gridC] (170:82.49651) arc[start angle=170, end angle=190, radius=82.49651];
-    \draw[gridC] (170:83.05517) arc[start angle=170, end angle=190, radius=83.05517];
-    \draw[gridC] (170:83.64176) arc[start angle=170, end angle=190, radius=83.64176];
-    \draw[gridC] (170:84.25768) arc[start angle=170, end angle=190, radius=84.25768];
-    \draw[gridC] (170:84.9044) arc[start angle=170, end angle=190, radius=84.9044];
-    \draw[gridC] (190:38.1) -- (190:85);
-    \draw[gridC] (189.5:38.1) -- (189.5:85);
-    \draw[gridC] (189:38.1) -- (189:85);
-    \draw[gridC] (188.5:38.1) -- (188.5:85);
-    \draw[gridC] (188:38.1) -- (188:85);
-    \draw[gridC] (187.5:38.1) -- (187.5:85);
-    \draw[gridC] (187:38.1) -- (187:85);
-    \draw[gridC] (186.5:38.1) -- (186.5:85);
-    \draw[gridC] (186:38.1) -- (186:85);
-    \draw[gridC] (185.5:38.1) -- (185.5:85);
-    \draw[gridC] (185:38.1) -- (185:85);
-    \draw[gridC] (184.5:38.1) -- (184.5:85);
-    \draw[gridC] (184:38.1) -- (184:85);
-    \draw[gridC] (183.5:38.1) -- (183.5:85);
-    \draw[gridC] (183:38.1) -- (183:85);
-    \draw[gridC] (182.5:38.1) -- (182.5:85);
-    \draw[gridC] (182:38.1) -- (182:85);
-    \draw[gridC] (181.5:38.1) -- (181.5:85);
-    \draw[gridC] (181:38.1) -- (181:85);
-    \draw[gridC] (180.5:38.1) -- (180.5:85);
-    \draw[gridC] (180:38.1) -- (180:85);
-    \draw[gridC] (179.5:38.1) -- (179.5:85);
-    \draw[gridC] (179:38.1) -- (179:85);
-    \draw[gridC] (178.5:38.1) -- (178.5:85);
-    \draw[gridC] (178:38.1) -- (178:85);
-    \draw[gridC] (177.5:38.1) -- (177.5:85);
-    \draw[gridC] (177:38.1) -- (177:85);
-    \draw[gridC] (176.5:38.1) -- (176.5:85);
-    \draw[gridC] (176:38.1) -- (176:85);
-    \draw[gridC] (175.5:38.1) -- (175.5:85);
-    \draw[gridC] (175:38.1) -- (175:85);
-    \draw[gridC] (174.5:38.1) -- (174.5:85);
-    \draw[gridC] (174:38.1) -- (174:85);
-    \draw[gridC] (173.5:38.1) -- (173.5:85);
-    \draw[gridC] (173:38.1) -- (173:85);
-    \draw[gridC] (172.5:38.1) -- (172.5:85);
-    \draw[gridC] (172:38.1) -- (172:85);
-    \draw[gridC] (171.5:38.1) -- (171.5:85);
-    \draw[gridC] (171:38.1) -- (171:85);
-    \draw[gridC] (170.5:38.1) -- (170.5:85);
+    % grid (129 circles, 41 rays shown)
+    \draw[gridC] (170:38.1002623) arc[start angle=170, end angle=190, radius=38.1002623];
+    \draw[gridC] (170:38.100609192) arc[start angle=170, end angle=190, radius=38.100609192];
+    \draw[gridC] (170:38.101067956) arc[start angle=170, end angle=190, radius=38.101067956];
+    \draw[gridC] (170:38.101674672) arc[start angle=170, end angle=190, radius=38.101674672];
+    \draw[gridC] (170:38.102477054) arc[start angle=170, end angle=190, radius=38.102477054];
+    \draw[gridC] (170:38.103538203) arc[start angle=170, end angle=190, radius=38.103538203];
+    \draw[gridC] (170:38.104941574) arc[start angle=170, end angle=190, radius=38.104941574];
+    \draw[gridC] (170:38.106797532) arc[start angle=170, end angle=190, radius=38.106797532];
+    \draw[gridC] (170:38.109252036) arc[start angle=170, end angle=190, radius=38.109252036];
+    \draw[gridC] (170:38.112498117) arc[start angle=170, end angle=190, radius=38.112498117];
+    \draw[gridC] (170:38.11679106) arc[start angle=170, end angle=190, radius=38.11679106];
+    \draw[gridC] (170:38.122468477) arc[start angle=170, end angle=190, radius=38.122468477];
+    \draw[gridC] (170:38.12997686) arc[start angle=170, end angle=190, radius=38.12997686];
+    \draw[gridC] (170:38.139906698) arc[start angle=170, end angle=190, radius=38.139906698];
+    \draw[gridC] (170:38.153038908) arc[start angle=170, end angle=190, radius=38.153038908];
+    \draw[gridC] (170:38.170406256) arc[start angle=170, end angle=190, radius=38.170406256];
+    \draw[gridC] (170:38.193374573) arc[start angle=170, end angle=190, radius=38.193374573];
+    \draw[gridC] (170:38.223750173) arc[start angle=170, end angle=190, radius=38.223750173];
+    \draw[gridC] (170:38.263921904) arc[start angle=170, end angle=190, radius=38.263921904];
+    \draw[gridC] (170:38.317049018) arc[start angle=170, end angle=190, radius=38.317049018];
+    \draw[gridC] (170:38.387309626) arc[start angle=170, end angle=190, radius=38.387309626];
+    \draw[gridC] (170:38.48022928) arc[start angle=170, end angle=190, radius=38.48022928];
+    \draw[gridC] (170:38.603115523) arc[start angle=170, end angle=190, radius=38.603115523];
+    \draw[gridC] (170:38.765632579) arc[start angle=170, end angle=190, radius=38.765632579];
+    \draw[gridC] (170:38.980561386) arc[start angle=170, end angle=190, radius=38.980561386];
+    \draw[gridC] (170:39.264804733) arc[start angle=170, end angle=190, radius=39.264804733];
+    \draw[gridC] (170:39.640173758) arc[start angle=170, end angle=190, radius=39.640173758];
+    \draw[gridC] (170:40.04122639) arc[start angle=170, end angle=190, radius=40.04122639];
+    \draw[gridC] (170:40.442279022) arc[start angle=170, end angle=190, radius=40.442279022];
+    \draw[gridC] (170:40.843331653) arc[start angle=170, end angle=190, radius=40.843331653];
+    \draw[gridC] (170:41.244384285) arc[start angle=170, end angle=190, radius=41.244384285];
+    \draw[gridC] (170:41.645436916) arc[start angle=170, end angle=190, radius=41.645436916];
+    \draw[gridC] (170:42.046489548) arc[start angle=170, end angle=190, radius=42.046489548];
+    \draw[gridC] (170:42.44754218) arc[start angle=170, end angle=190, radius=42.44754218];
+    \draw[gridC] (170:42.848594811) arc[start angle=170, end angle=190, radius=42.848594811];
+    \draw[gridC] (170:43.249647443) arc[start angle=170, end angle=190, radius=43.249647443];
+    \draw[gridC] (170:43.650700074) arc[start angle=170, end angle=190, radius=43.650700074];
+    \draw[gridC] (170:44.051752706) arc[start angle=170, end angle=190, radius=44.051752706];
+    \draw[gridC] (170:44.452805337) arc[start angle=170, end angle=190, radius=44.452805337];
+    \draw[gridC] (170:44.853857969) arc[start angle=170, end angle=190, radius=44.853857969];
+    \draw[gridC] (170:45.254910601) arc[start angle=170, end angle=190, radius=45.254910601];
+    \draw[gridC] (170:45.655963232) arc[start angle=170, end angle=190, radius=45.655963232];
+    \draw[gridC] (170:46.057015864) arc[start angle=170, end angle=190, radius=46.057015864];
+    \draw[gridC] (170:46.458068495) arc[start angle=170, end angle=190, radius=46.458068495];
+    \draw[gridC] (170:46.859121127) arc[start angle=170, end angle=190, radius=46.859121127];
+    \draw[gridC] (170:47.260173758) arc[start angle=170, end angle=190, radius=47.260173758];
+    \draw[gridC] (170:47.66122639) arc[start angle=170, end angle=190, radius=47.66122639];
+    \draw[gridC] (170:48.062279022) arc[start angle=170, end angle=190, radius=48.062279022];
+    \draw[gridC] (170:48.463331653) arc[start angle=170, end angle=190, radius=48.463331653];
+    \draw[gridC] (170:48.864384285) arc[start angle=170, end angle=190, radius=48.864384285];
+    \draw[gridC] (170:49.265436916) arc[start angle=170, end angle=190, radius=49.265436916];
+    \draw[gridC] (170:49.666489548) arc[start angle=170, end angle=190, radius=49.666489548];
+    \draw[gridC] (170:50.06754218) arc[start angle=170, end angle=190, radius=50.06754218];
+    \draw[gridC] (170:50.468594811) arc[start angle=170, end angle=190, radius=50.468594811];
+    \draw[gridC] (170:50.869647443) arc[start angle=170, end angle=190, radius=50.869647443];
+    \draw[gridC] (170:51.270700074) arc[start angle=170, end angle=190, radius=51.270700074];
+    \draw[gridC] (170:51.671752706) arc[start angle=170, end angle=190, radius=51.671752706];
+    \draw[gridC] (170:52.072805337) arc[start angle=170, end angle=190, radius=52.072805337];
+    \draw[gridC] (170:52.473857969) arc[start angle=170, end angle=190, radius=52.473857969];
+    \draw[gridC] (170:52.874910601) arc[start angle=170, end angle=190, radius=52.874910601];
+    \draw[gridC] (170:53.275963232) arc[start angle=170, end angle=190, radius=53.275963232];
+    \draw[gridC] (170:53.677015864) arc[start angle=170, end angle=190, radius=53.677015864];
+    \draw[gridC] (170:54.078068495) arc[start angle=170, end angle=190, radius=54.078068495];
+    \draw[gridC] (170:54.479121127) arc[start angle=170, end angle=190, radius=54.479121127];
+    \draw[gridC] (170:54.880173758) arc[start angle=170, end angle=190, radius=54.880173758];
+    \draw[gridC] (170:55.28122639) arc[start angle=170, end angle=190, radius=55.28122639];
+    \draw[gridC] (170:55.682279022) arc[start angle=170, end angle=190, radius=55.682279022];
+    \draw[gridC] (170:56.083331653) arc[start angle=170, end angle=190, radius=56.083331653];
+    \draw[gridC] (170:56.484384285) arc[start angle=170, end angle=190, radius=56.484384285];
+    \draw[gridC] (170:56.885436916) arc[start angle=170, end angle=190, radius=56.885436916];
+    \draw[gridC] (170:57.286489548) arc[start angle=170, end angle=190, radius=57.286489548];
+    \draw[gridC] (170:57.68754218) arc[start angle=170, end angle=190, radius=57.68754218];
+    \draw[gridC] (170:58.088594811) arc[start angle=170, end angle=190, radius=58.088594811];
+    \draw[gridC] (170:58.489647443) arc[start angle=170, end angle=190, radius=58.489647443];
+    \draw[gridC] (170:58.890700074) arc[start angle=170, end angle=190, radius=58.890700074];
+    \draw[gridC] (170:59.291752706) arc[start angle=170, end angle=190, radius=59.291752706];
+    \draw[gridC] (170:59.692805337) arc[start angle=170, end angle=190, radius=59.692805337];
+    \draw[gridC] (170:60.093857969) arc[start angle=170, end angle=190, radius=60.093857969];
+    \draw[gridC] (170:60.494910601) arc[start angle=170, end angle=190, radius=60.494910601];
+    \draw[gridC] (170:60.895963232) arc[start angle=170, end angle=190, radius=60.895963232];
+    \draw[gridC] (170:61.297015864) arc[start angle=170, end angle=190, radius=61.297015864];
+    \draw[gridC] (170:61.698068495) arc[start angle=170, end angle=190, radius=61.698068495];
+    \draw[gridC] (170:62.099121127) arc[start angle=170, end angle=190, radius=62.099121127];
+    \draw[gridC] (170:62.500173758) arc[start angle=170, end angle=190, radius=62.500173758];
+    \draw[gridC] (170:62.90122639) arc[start angle=170, end angle=190, radius=62.90122639];
+    \draw[gridC] (170:63.302279022) arc[start angle=170, end angle=190, radius=63.302279022];
+    \draw[gridC] (170:63.703331653) arc[start angle=170, end angle=190, radius=63.703331653];
+    \draw[gridC] (170:64.104384285) arc[start angle=170, end angle=190, radius=64.104384285];
+    \draw[gridC] (170:64.505436916) arc[start angle=170, end angle=190, radius=64.505436916];
+    \draw[gridC] (170:64.906489548) arc[start angle=170, end angle=190, radius=64.906489548];
+    \draw[gridC] (170:65.30754218) arc[start angle=170, end angle=190, radius=65.30754218];
+    \draw[gridC] (170:65.708594811) arc[start angle=170, end angle=190, radius=65.708594811];
+    \draw[gridC] (170:66.109647443) arc[start angle=170, end angle=190, radius=66.109647443];
+    \draw[gridC] (170:66.510700074) arc[start angle=170, end angle=190, radius=66.510700074];
+    \draw[gridC] (170:66.911752706) arc[start angle=170, end angle=190, radius=66.911752706];
+    \draw[gridC] (170:67.312805337) arc[start angle=170, end angle=190, radius=67.312805337];
+    \draw[gridC] (170:67.713857969) arc[start angle=170, end angle=190, radius=67.713857969];
+    \draw[gridC] (170:68.114910601) arc[start angle=170, end angle=190, radius=68.114910601];
+    \draw[gridC] (170:68.515963232) arc[start angle=170, end angle=190, radius=68.515963232];
+    \draw[gridC] (170:68.917015864) arc[start angle=170, end angle=190, radius=68.917015864];
+    \draw[gridC] (170:69.318068495) arc[start angle=170, end angle=190, radius=69.318068495];
+    \draw[gridC] (170:69.719121127) arc[start angle=170, end angle=190, radius=69.719121127];
+    \draw[gridC] (170:70.120173758) arc[start angle=170, end angle=190, radius=70.120173758];
+    \draw[gridC] (170:70.52122639) arc[start angle=170, end angle=190, radius=70.52122639];
+    \draw[gridC] (170:70.922279022) arc[start angle=170, end angle=190, radius=70.922279022];
+    \draw[gridC] (170:71.323331653) arc[start angle=170, end angle=190, radius=71.323331653];
+    \draw[gridC] (170:71.724384285) arc[start angle=170, end angle=190, radius=71.724384285];
+    \draw[gridC] (170:72.125436916) arc[start angle=170, end angle=190, radius=72.125436916];
+    \draw[gridC] (170:72.526489548) arc[start angle=170, end angle=190, radius=72.526489548];
+    \draw[gridC] (170:72.92754218) arc[start angle=170, end angle=190, radius=72.92754218];
+    \draw[gridC] (170:73.328594811) arc[start angle=170, end angle=190, radius=73.328594811];
+    \draw[gridC] (170:73.729647443) arc[start angle=170, end angle=190, radius=73.729647443];
+    \draw[gridC] (170:74.130700074) arc[start angle=170, end angle=190, radius=74.130700074];
+    \draw[gridC] (170:74.531752706) arc[start angle=170, end angle=190, radius=74.531752706];
+    \draw[gridC] (170:74.932805337) arc[start angle=170, end angle=190, radius=74.932805337];
+    \draw[gridC] (170:75.333857969) arc[start angle=170, end angle=190, radius=75.333857969];
+    \draw[gridC] (170:75.744936916) arc[start angle=170, end angle=190, radius=75.744936916];
+    \draw[gridC] (170:76.198151456) arc[start angle=170, end angle=190, radius=76.198151456];
+    \draw[gridC] (170:76.697820486) arc[start angle=170, end angle=190, radius=76.697820486];
+    \draw[gridC] (170:77.248705591) arc[start angle=170, end angle=190, radius=77.248705591];
+    \draw[gridC] (170:77.85605642) arc[start angle=170, end angle=190, radius=77.85605642];
+    \draw[gridC] (170:78.525660708) arc[start angle=170, end angle=190, radius=78.525660708];
+    \draw[gridC] (170:79.263899436) arc[start angle=170, end angle=190, radius=79.263899436];
+    \draw[gridC] (170:80.077807634) arc[start angle=170, end angle=190, radius=80.077807634];
+    \draw[gridC] (170:80.975141422) arc[start angle=170, end angle=190, radius=80.975141422];
+    \draw[gridC] (170:81.964451923) arc[start angle=170, end angle=190, radius=81.964451923];
+    \draw[gridC] (170:83.055166751) arc[start angle=170, end angle=190, radius=83.055166751];
+    \draw[gridC] (170:84.257679849) arc[start angle=170, end angle=190, radius=84.257679849];
     \draw[gridC] (170:38.1) -- (170:85);
+    \draw[gridC] (170.5:38.1) -- (170.5:85);
+    \draw[gridC] (171:38.1) -- (171:85);
+    \draw[gridC] (171.5:38.1) -- (171.5:85);
+    \draw[gridC] (172:38.1) -- (172:85);
+    \draw[gridC] (172.5:38.1) -- (172.5:85);
+    \draw[gridC] (173:38.1) -- (173:85);
+    \draw[gridC] (173.5:38.1) -- (173.5:85);
+    \draw[gridC] (174:38.1) -- (174:85);
+    \draw[gridC] (174.5:38.1) -- (174.5:85);
+    \draw[gridC] (175:38.1) -- (175:85);
+    \draw[gridC] (175.5:38.1) -- (175.5:85);
+    \draw[gridC] (176:38.1) -- (176:85);
+    \draw[gridC] (176.5:38.1) -- (176.5:85);
+    \draw[gridC] (177:38.1) -- (177:85);
+    \draw[gridC] (177.5:38.1) -- (177.5:85);
+    \draw[gridC] (178:38.1) -- (178:85);
+    \draw[gridC] (178.5:38.1) -- (178.5:85);
+    \draw[gridC] (179:38.1) -- (179:85);
+    \draw[gridC] (179.5:38.1) -- (179.5:85);
+    \draw[gridC] (180:38.1) -- (180:85);
+    \draw[gridC] (180.5:38.1) -- (180.5:85);
+    \draw[gridC] (181:38.1) -- (181:85);
+    \draw[gridC] (181.5:38.1) -- (181.5:85);
+    \draw[gridC] (182:38.1) -- (182:85);
+    \draw[gridC] (182.5:38.1) -- (182.5:85);
+    \draw[gridC] (183:38.1) -- (183:85);
+    \draw[gridC] (183.5:38.1) -- (183.5:85);
+    \draw[gridC] (184:38.1) -- (184:85);
+    \draw[gridC] (184.5:38.1) -- (184.5:85);
+    \draw[gridC] (185:38.1) -- (185:85);
+    \draw[gridC] (185.5:38.1) -- (185.5:85);
+    \draw[gridC] (186:38.1) -- (186:85);
+    \draw[gridC] (186.5:38.1) -- (186.5:85);
+    \draw[gridC] (187:38.1) -- (187:85);
+    \draw[gridC] (187.5:38.1) -- (187.5:85);
+    \draw[gridC] (188:38.1) -- (188:85);
+    \draw[gridC] (188.5:38.1) -- (188.5:85);
+    \draw[gridC] (189:38.1) -- (189:85);
+    \draw[gridC] (189.5:38.1) -- (189.5:85);
+    \draw[gridC] (190:38.1) -- (190:85);
     \draw[gridedge, line width=0.9pt] (170:38.1) arc[start angle=170, end angle=190, radius=38.1];
     % no-field bow shock
-    \draw[accent, line width=0.9pt, dash pattern=on 2.4pt off 1.3pt, line cap=butt]
+    \draw[shockref, line width=0.9pt, dash pattern=on 2.4pt off 1.3pt, line cap=butt]
       (-66.25,36.26) -- (-67.22,33.51) -- (-68.11,30.68) -- (-68.89,27.84) --
       (-69.7,24.34) -- (-70.81,18.31) -- (-71.25,15.47) -- (-71.45,13.89) --
       (-71.71,11.68) -- (-72.15,6.95) -- (-72.27,4.74) -- (-72.31,2.52) -- (-72.3,-2.52) --
@@ -676,8 +723,8 @@
   \draw[dim] (-75.53,7.735) -- (-39.64,7.735);
   \node[sml, anchor=south, fill=white, inner sep=0.6pt] at (-57.59,7.835)
     {uniform $\Delta r$ = 0.2\,mm};
-  \node[sml, text=accent, anchor=south west, fill=white, inner sep=0.8pt] at (-79.4,-6.035)
-    {bow shock};
+  \node[sml, text=shockref, anchor=south west, fill=white, inner sep=0.8pt] at (-79.4,-6.035)
+    {bow shock (reference)};
   \node[sml, anchor=south east, fill=white, inner sep=0.8pt] at (-38.7,-6.035)
     {$\Delta r_w$ = 0.12\,$\mu$m};
 \end{scope}
